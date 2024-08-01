@@ -34,9 +34,11 @@ namespace DemoEchoBot.Dialogs
 
         private async Task<DialogTurnResult> IntroStepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
-            var messageText = "สวัสดี, ต้องการอะไรหรือเปล่าヽ(✿ﾟ▽ﾟ)ノ";
-            var promptMessage = MessageFactory.Text(messageText, messageText, InputHints.ExpectingInput);
-            return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions { Prompt = promptMessage }, cancellationToken);
+            //var messageText = "สวัสดี, ต้องการอะไรหรือเปล่าヽ(✿ﾟ▽ﾟ)ノ";
+            var messageText = stepContext.Context.Activity.Text;
+            var promptMessage = MessageFactory.Text(messageText, messageText, InputHints.IgnoringInput);
+            //await stepContext.Context.SendActivityAsync(promptMessage, cancellationToken);
+            return await stepContext.ContinueDialogAsync(cancellationToken);
         }
 
         private async Task<DialogTurnResult> ActStepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
