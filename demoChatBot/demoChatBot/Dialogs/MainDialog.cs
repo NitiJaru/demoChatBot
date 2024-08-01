@@ -13,12 +13,14 @@ namespace DemoEchoBot.Dialogs
 {
     public class MainDialog : ComponentDialog
     {
-        public MainDialog(FoodDialog foodDialog, PaymentDialog paymentDialog) : base(nameof(MainDialog))
+        public MainDialog(FoodDialog foodDialog, PaymentDialog paymentDialog, OpenRestaurantDialog openRestaurantDialog, CloseRestaurantDialog closeRestaurantDialog, OrderRestaurantDialog orderRestaurantDialog) : base(nameof(MainDialog))
         {
             AddDialog(new TextPrompt(nameof(TextPrompt)));
             AddDialog(foodDialog);
             AddDialog(paymentDialog);
-
+            AddDialog(openRestaurantDialog);
+            AddDialog(closeRestaurantDialog);
+            AddDialog(orderRestaurantDialog);
             var waterfallSteps = new WaterfallStep[]
             {
                 IntroStepAsync,
@@ -43,30 +45,48 @@ namespace DemoEchoBot.Dialogs
 
         private async Task<DialogTurnResult> ActStepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
-            if (isConversationFood())
+            if (isConversationRestaurant() != null)
             {
-                return await stepContext.BeginDialogAsync(nameof(FoodDialog), new FoodInfo { FoodType = stepContext.Result.ToString() }, cancellationToken);
-            }
-            else if (isConversationPayment())
-            {
-                return await stepContext.BeginDialogAsync(nameof(PaymentDialog), new PaymentInfo { Operation = stepContext.Result.ToString() }, cancellationToken);
+                var data = isConversationRestaurant();
+                switch (data)
+                {
+                    case "เปิดร้าน":
+                        return await stepContext.BeginDialogAsync(nameof(OpenRestaurantDialog), new PaymentInfo { Operation = stepContext.Result.ToString() }, cancellationToken);
+                    //return await stepContext.ReplaceDialogAsync(InitialDialogId, promptMessage, cancellationToken);
+
+                    case "ปิดร้าน":
+                        return await stepContext.BeginDialogAsync(nameof(CloseRestaurantDialog), new PaymentInfo { Operation = stepContext.Result.ToString() }, cancellationToken);
+                    case "ออเดอร์":
+                        return await stepContext.BeginDialogAsync(nameof(OrderRestaurantDialog), new PaymentInfo { Operation = stepContext.Result.ToString() }, cancellationToken);
+                    case "อัพเดท":
+                        var attachments = new List<Attachment>();
+                        var heroCard = new HeroCard
+                        {
+                            Title = "มีการอัพเดทเมนู",
+                            Images = new List<CardImage> { new CardImage("https://failfast.blob.core.windows.net/upload/Delivery/update.png") },
+                            Buttons = new List<CardAction> { new CardAction(ActionTypes.OpenUrl, "ดูรายละเอียด", value: "http:www.google.com") }
+                        };
+
+                        attachments.Add(heroCard.ToAttachment());
+                        var reply = MessageFactory.Attachment(attachments);
+                        return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions { Prompt = (Activity)reply });
+                    default:
+                        break;
+                }
             }
             else
             {
                 var didntUnderstandMessageText = "ระบบไม่เข้าใจ ลองใช้คำอื่นแทนดูไหม? ❤️";
                 var didntUnderstandMessage = MessageFactory.Text(didntUnderstandMessageText, didntUnderstandMessageText, InputHints.IgnoringInput);
                 await stepContext.Context.SendActivityAsync(didntUnderstandMessage, cancellationToken);
+                return await stepContext.EndDialogAsync(null, cancellationToken);
             }
 
-            bool isConversationFood()
+            string isConversationRestaurant()
             {
-                var keyword = new[] { "หิว", "กิน", "ทาน", "ข้าว", "อาหาร" };
-                return keyword.Any(it => stepContext.Result.ToString().Contains(it));
-            }
-            bool isConversationPayment()
-            {
-                var keyword = new[] { "โอน", "ถอน", "จ่าย", "เงิน" };
-                return keyword.Any(it => stepContext.Result.ToString().Contains(it));
+                var keyword = new[] { "ปิดร้าน", "เปิดร้าน", "ออเดอร์", "ประวัติ", "ตั้งค่า", "delevery", "อัพเดท" };
+                var data = keyword.FirstOrDefault(it => it == stepContext.Result.ToString());
+                return data;
             }
 
             return await stepContext.NextAsync(null, cancellationToken);
@@ -74,21 +94,21 @@ namespace DemoEchoBot.Dialogs
 
         private async Task<DialogTurnResult> FinalStepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
-            if (stepContext.Result is not null)
-            {
-                var postUrl = stepContext.Result is FoodInfo ? "delivery/foods" : "payment?tx=1234567890";
-                var url = $"https://mlink.com/{postUrl}";
+            //if (stepContext.Result is not null)
+            //{
+            //    var postUrl = stepContext.Result is FoodInfo ? "delivery/foods" : "payment?tx=1234567890";
+            //    var url = $"https://mlink.com/{postUrl}";
 
-                var preText = stepContext.Result is FoodInfo ? "เพลิดเพลินกับอาหาร" : "ดำเนินธุรกรรม";
-                var messageText = $"คุณสามารถ{preText}ด้วย Url นี้{Environment.NewLine}{url}";
+            //    var preText = stepContext.Result is FoodInfo ? "เพลิดเพลินกับอาหาร" : "ดำเนินธุรกรรม";
+            //    var messageText = $"คุณสามารถ{preText}ด้วย Url นี้{Environment.NewLine}{url}";
 
-                var message = MessageFactory.Text(messageText, messageText, InputHints.IgnoringInput);
-                await stepContext.Context.SendActivityAsync(message, cancellationToken);
-            }
+            //    var message = MessageFactory.Text(messageText, messageText, InputHints.IgnoringInput);
+            //    await stepContext.Context.SendActivityAsync(message, cancellationToken);
+            //}
 
             // TODO: Not any changed
             var promptMessage = "มีอะไรให้ช่วยเหลืออีกไหม?";
-            return await stepContext.ReplaceDialogAsync(InitialDialogId, promptMessage, cancellationToken);
+            return await stepContext.ReplaceDialogAsync(InitialDialogId, "", cancellationToken);
         }
     }
 }

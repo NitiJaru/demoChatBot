@@ -56,7 +56,7 @@ namespace DemoEchoBot.Dialogs
         {
             var data = stepContext.Result.ToString();
             var message = "";
-            message = data == "ยืนยันการปิดรับงาน" ? "ยืนยันการเปิดร้าน" : "ยกเลิกการเปิดร้าน";
+            message = data == "ยืนยันการเปิดร้าน" ? "ยืนยันการเปิดร้าน" : "ยกเลิกการเปิดร้าน";
 
             var promptMessage = MessageFactory.Text(message, message, InputHints.ExpectingInput);
             return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions { Prompt = promptMessage }, cancellationToken);

@@ -44,6 +44,9 @@ namespace demoChatBot
             services.AddSingleton<ConversationState>();
             services.AddSingleton<FoodDialog>();
             services.AddSingleton<PaymentDialog>();
+            services.AddSingleton<OpenRestaurantDialog>();
+            services.AddSingleton<CloseRestaurantDialog>();
+            services.AddSingleton<OrderRestaurantDialog>();
             services.AddSingleton<MainDialog>();
             services.AddTransient<IBot, DialogBot<MainDialog>>();
         }
