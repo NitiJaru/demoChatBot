@@ -53,7 +53,7 @@ namespace DemoEchoBot.Dialogs
 
             reply.AttachmentLayout = AttachmentLayoutTypes.Carousel;
             var rnd = new Random();
-            for (int i = 1; i <= 10; i++)
+            for (int i = 1; i <= 20; i++)
             {
                 heroCard.Title = $"ออเดอร์ {i}";
                 heroCard.Text = $"{Environment.NewLine}ราคา {rnd.Next(30, 99)}฿";
