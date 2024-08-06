@@ -56,10 +56,22 @@ namespace DemoEchoBot.Dialogs
         {
             var data = stepContext.Result.ToString();
             var message = "";
-            message = data == "ยืนยันการเปิดร้าน" ? "ยืนยันการเปิดร้าน" : "ยกเลิกการเปิดร้าน";
 
-            var promptMessage = MessageFactory.Text(message, message, InputHints.ExpectingInput);
-            return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions { Prompt = promptMessage }, cancellationToken);
+            switch (data)
+            {
+                case "ยืนยันการเปิดร้าน":
+                    message = "ยืนยันการเปิดร้าน";
+                    var confirmMessage = MessageFactory.Text(message, message, InputHints.ExpectingInput);
+                    return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions { Prompt = confirmMessage }, cancellationToken);
+                case "ยกเลิกการเปิดร้าน":
+                    message = "ยกเลิกการเปิดร้าน";
+                    var cancleMessage = MessageFactory.Text(message, message, InputHints.ExpectingInput);
+                    return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions { Prompt = cancleMessage }, cancellationToken);
+
+                default:
+                    break;
+            }
+            return await stepContext.NextAsync(null, cancellationToken);
 
         }
 

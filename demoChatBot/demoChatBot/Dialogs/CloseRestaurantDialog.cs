@@ -23,7 +23,9 @@ namespace DemoEchoBot.Dialogs
             var waterfallSteps = new WaterfallStep[]
             {
                 CloseRestaurant,
-                CheckstatusRestaurant
+                CheckstatusRestaurant,
+                FinalStepAsync
+
             };
 
             AddDialog(new WaterfallDialog(nameof(WaterfallDialog), waterfallSteps));
@@ -41,7 +43,7 @@ namespace DemoEchoBot.Dialogs
                 Title = "ปิดร้าน",
                 Text = "คุณต้องการปิดร้านใช่หรือไม่",
                 Images = new List<CardImage> { new CardImage("https://failfast.blob.core.windows.net/upload/Delivery/closeResturent_Rich_Message.png") },
-                Buttons = new List<CardAction> { new CardAction(ActionTypes.ImBack, "ยืนยัน", value: "ยืนยันการปิดร้าน"), new CardAction(ActionTypes.ImBack, "ยกเลิก", value: "ยกเลิกการปิดรัาน") }
+                Buttons = new List<CardAction> { new CardAction(ActionTypes.ImBack, "ยืนยัน", value: "ยืนยันการปิดร้าน"), new CardAction(ActionTypes.ImBack, "ยกเลิก", value: "ยกเลิกการปิดร้าน") }
             };
 
             attachments.Add(heroCard.ToAttachment());
@@ -54,11 +56,24 @@ namespace DemoEchoBot.Dialogs
         {
             var data = stepContext.Result.ToString();
             var message = "";
-            message = data == "ยืนยันการปิดร้าน" ? "ยืนยันการปิดร้าน" : "ยกเลิกการปิดร้าน";
-
-            var promptMessage = MessageFactory.Text(message, message, InputHints.ExpectingInput);
-            return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions { Prompt = promptMessage }, cancellationToken);
-
+            switch (data)
+            {
+                case "ยืนยันการปิดร้าน":
+                    message = "ยืนยันการปิดร้าน";
+                    var confirmMessage = MessageFactory.Text(message, message, InputHints.ExpectingInput);
+                    return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions { Prompt = confirmMessage }, cancellationToken);
+                case "ยกเลิกการปิดร้าน":
+                    message = "ยกเลิกการปิดร้าน";
+                    var cancleMessage = MessageFactory.Text(message, message, InputHints.ExpectingInput);
+                    return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions { Prompt = cancleMessage }, cancellationToken);
+                default:
+                    break;
+            }
+            return await stepContext.NextAsync(null, cancellationToken);
+        }
+        private async Task<DialogTurnResult> FinalStepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
+        {
+            return await stepContext.EndDialogAsync(null, cancellationToken);
         }
     }
 

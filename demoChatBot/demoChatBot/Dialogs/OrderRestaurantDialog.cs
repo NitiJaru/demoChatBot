@@ -26,7 +26,8 @@ namespace DemoEchoBot.Dialogs
             var waterfallSteps = new WaterfallStep[]
             {
                 GetOrderRestaurant,
-                CheckstatusRestaurant
+                CheckstatusRestaurant,
+                FinalStepAsync
             };
 
             AddDialog(new WaterfallDialog(nameof(WaterfallDialog), waterfallSteps));
@@ -42,13 +43,6 @@ namespace DemoEchoBot.Dialogs
 
             var heroCard = new HeroCard
             { };
-            //var heroCard = new HeroCard
-            //{
-            //    Title = "ออเดอร์ ",
-            //    Text = "ราคา 10 ฿",
-            //    Images = new List<CardImage> { new CardImage("https://failfast.blob.core.windows.net/upload/Delivery/closeResturent_Rich_Message.png") },
-            //    Buttons = new List<CardAction> { new CardAction(ActionTypes.ImBack, "ดูรายละเอียด", value: "ดูรายละเอียด"), new CardAction(ActionTypes.ImBack, "อาหารเสร็จแล้ว", value: "อาหารเสร็จแล้ว") }
-            //};
             var img = new List<CardImage> { new CardImage("https://failfast.blob.core.windows.net/upload/Delivery/ka.jpg") };
 
             reply.AttachmentLayout = AttachmentLayoutTypes.Carousel;
@@ -70,11 +64,24 @@ namespace DemoEchoBot.Dialogs
         {
             var data = stepContext.Result.ToString();
             var message = "";
-            message = data == "ดูรายละเอียด" ? "ดูรายละเอียด" : "ออเดอร์ที่กดอาหารเสร็จแล้วหายไป";
-
-            var promptMessage = MessageFactory.Text(message, message, InputHints.ExpectingInput);
-            return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions { Prompt = promptMessage }, cancellationToken);
-
+            switch (data)
+            {
+                case "ดูรายละเอียด":
+                    message = "ดูรายละเอียด";
+                    var confirmMessage = MessageFactory.Text(message, message, InputHints.ExpectingInput);
+                    return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions { Prompt = confirmMessage }, cancellationToken);
+                case "อาหารเสร็จแล้ว":
+                    message = "ออเดอร์ที่กดอาหารเสร็จแล้วหายไป";
+                    var cancleMessage = MessageFactory.Text(message, message, InputHints.ExpectingInput);
+                    return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions { Prompt = cancleMessage }, cancellationToken);
+                default:
+                    break;
+            }
+            return await stepContext.NextAsync(null, cancellationToken);
+        }
+        private async Task<DialogTurnResult> FinalStepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
+        {
+            return await stepContext.EndDialogAsync(null, cancellationToken);
         }
     }
 
