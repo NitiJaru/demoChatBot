@@ -8,9 +8,11 @@ using Microsoft.Bot.Schema;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Mail;
 using System.Threading;
 using System.Threading.Tasks;
 using static System.Net.Mime.MediaTypeNames;
+using Attachment = Microsoft.Bot.Schema.Attachment;
 
 namespace DemoEchoBot.Dialogs
 {
@@ -40,24 +42,15 @@ namespace DemoEchoBot.Dialogs
             var data = (PaymentInfo)stepContext.Options;
             var attachments = new List<Attachment>();
             var reply = MessageFactory.Attachment(attachments);
-
+            var resOrderApi = $"https://devster-delivery-test.onmana.space/apprestaurant/index.html#/order-main";
             var heroCard = new HeroCard
-            { };
-            var img = new List<CardImage> { new CardImage("https://failfast.blob.core.windows.net/upload/Delivery/ka.jpg") };
-
-            reply.AttachmentLayout = AttachmentLayoutTypes.Carousel;
-            var rnd = new Random();
-            for (int i = 1; i <= 20; i++)
             {
-                heroCard.Title = $"ออเดอร์ {i}";
-                heroCard.Text = $"{Environment.NewLine}ราคา {rnd.Next(30, 99)}฿";
-                heroCard.Images = img;
-                heroCard.Buttons = new List<CardAction> { new CardAction(ActionTypes.OpenUrl, "ดูรายละเอียด", value: "http://www.google.com"), new CardAction(ActionTypes.ImBack, "อาหารเสร็จแล้ว", value: "อาหารเสร็จแล้ว") };
-                reply.Attachments.Add(heroCard.ToAttachment());
-                heroCard = new HeroCard { };
-            }
+                Title = "ดูข้อมูลออเดอร์หรืออัพเดทสถานะออเดอร์",
+                Text = $"ผ่านจากลิงค์นี้ {resOrderApi}",
+                Buttons = new List<CardAction> { new CardAction(ActionTypes.OpenUrl, "เปิดลิงค์", value: resOrderApi) }
+            };
+            reply.Attachments.Add(heroCard.ToAttachment());
             return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions { Prompt = (Activity)reply });
-
         }
 
         private async Task<DialogTurnResult> CheckstatusRestaurant(WaterfallStepContext stepContext, CancellationToken cancellationToken)

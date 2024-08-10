@@ -1,9 +1,12 @@
 ﻿using demoChatBot.Models;
+using DemoEchoBot.Services;
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Builder.Dialogs.Choices;
 using Microsoft.Bot.Connector;
 using Microsoft.Bot.Schema;
+using Microsoft.Identity.Client;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,8 +17,15 @@ namespace DemoEchoBot.Dialogs
 {
     public class OpenRestaurantDialog : ComponentDialog
     {
-        public OpenRestaurantDialog() : base(nameof(OpenRestaurantDialog))
+        private readonly string APIBaseUrl = "https://delivery-3rd-test-api.azurewebsites.net";
+        private RestaurantShortResponse _restaurantDetail;
+
+        private readonly IRestClientService _restClientService;
+
+        public OpenRestaurantDialog(IRestClientService restClientService) : base(nameof(OpenRestaurantDialog))
         {
+            _restClientService = restClientService;
+
             AddDialog(new TextPrompt(nameof(TextPrompt)));
             AddDialog(new ChoicePrompt(nameof(ChoicePrompt)));
             AddDialog(new ConfirmPrompt(nameof(ConfirmPrompt)));
@@ -34,6 +44,10 @@ namespace DemoEchoBot.Dialogs
 
         private async Task<DialogTurnResult> OpenRestaurant(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
+            var baId = "594873324404759";
+            var resturnonAPI = $"{APIBaseUrl}/api/Restaurant/GetRestaurantInfo/{baId}";
+            var respon = await _restClientService.Get<RestaurantShortResponse>(resturnonAPI);
+            _restaurantDetail = respon;
             var data = (PaymentInfo)stepContext.Options;
             var attachments = new List<Attachment>();
 
@@ -49,31 +63,44 @@ namespace DemoEchoBot.Dialogs
             var reply = MessageFactory.Attachment(attachments);
 
             return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions { Prompt = (Activity)reply });
-
         }
 
         private async Task<DialogTurnResult> CheckstatusRestaurant(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
             var data = stepContext.Result.ToString();
             var message = "";
-
-            switch (data)
+            var resturnonAPI = $"{APIBaseUrl}/api/Restaurant/RestaurantStandbyTurnOn/{_restaurantDetail._id}";
+            await _restClientService.Post(resturnonAPI, string.Empty);
+            if (_restaurantDetail.IsStandby)
             {
-                case "ยืนยันการเปิดร้าน":
-                    message = "ยืนยันการเปิดร้าน";
-                    var confirmMessage = MessageFactory.Text(message, message, InputHints.ExpectingInput);
-                    return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions { Prompt = confirmMessage }, cancellationToken);
-                case "ยกเลิกการเปิดร้าน":
-                    message = "ยกเลิกการเปิดร้าน";
-                    var cancleMessage = MessageFactory.Text(message, message, InputHints.ExpectingInput);
-                    return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions { Prompt = cancleMessage }, cancellationToken);
+                var messageText = "คุณเปิดร้านอยู่แล้ว";
+                var promptMessage = MessageFactory.Text(messageText, messageText, InputHints.IgnoringInput);
+                return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions { Prompt = promptMessage });
 
-                default:
-                    break;
+                //return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions { Prompt = promptMessage }, cancellationToken);
+
+
+            }
+            else
+            {
+                switch (data)
+                {
+                    case "ยืนยันการเปิดร้าน":
+                        message = "ยืนยันการเปิดร้าน";
+                        var confirmMessage = MessageFactory.Text(message, message, InputHints.ExpectingInput);
+                        return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions { Prompt = confirmMessage }, cancellationToken);
+                    case "ยกเลิกการเปิดร้าน":
+                        message = "ยกเลิกการเปิดร้าน";
+                        var cancleMessage = MessageFactory.Text(message, message, InputHints.ExpectingInput);
+                        return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions { Prompt = cancleMessage }, cancellationToken);
+
+                    default:
+                        break;
+                }
             }
             return await stepContext.NextAsync(null, cancellationToken);
-
         }
+
 
         private async Task<DialogTurnResult> FinalStepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {

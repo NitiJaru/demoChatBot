@@ -5,14 +5,18 @@
 
 using DemoEchoBot.Bots;
 using DemoEchoBot.Dialogs;
+using DemoEchoBot.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Integration.AspNet.Core;
 using Microsoft.Bot.Connector.Authentication;
+using Microsoft.Bot.Schema;
+using Microsoft.BotBuilderSamples;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using System.Collections.Concurrent;
 
 namespace demoChatBot
 {
@@ -39,6 +43,8 @@ namespace demoChatBot
             // Create the Bot Adapter with error handling enabled.
             services.AddSingleton<IBotFrameworkHttpAdapter, AdapterWithErrorHandler>();
 
+            services.AddSingleton<ConcurrentDictionary<string, ConversationReference>>();
+
             // Create the bot as a transient. In this case the ASP Controller is expecting an IBot.
             services.AddSingleton<IStorage, MemoryStorage>();
             services.AddSingleton<ConversationState>();
@@ -48,7 +54,11 @@ namespace demoChatBot
             services.AddSingleton<CloseRestaurantDialog>();
             services.AddSingleton<OrderRestaurantDialog>();
             services.AddSingleton<MainDialog>();
+            //services.AddSingleton<ProactiveBot>();
+            services.AddSingleton<ConcurrentDictionary<string, ConversationReference>>();
+
             services.AddTransient<IBot, DialogBot<MainDialog>>();
+            services.AddTransient<IRestClientService, RestClientService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

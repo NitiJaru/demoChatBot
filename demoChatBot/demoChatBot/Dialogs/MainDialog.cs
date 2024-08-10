@@ -8,6 +8,7 @@ using Microsoft.Bot.Builder.Dialogs.Choices;
 using System;
 using System.Linq;
 using demoChatBot.Models;
+using Newtonsoft.Json.Linq;
 
 namespace DemoEchoBot.Dialogs
 {
@@ -88,7 +89,6 @@ namespace DemoEchoBot.Dialogs
                 var data = keyword.FirstOrDefault(it => it == stepContext.Result.ToString());
                 return data;
             }
-
             return await stepContext.NextAsync(null, cancellationToken);
         }
 
