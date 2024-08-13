@@ -174,9 +174,9 @@ namespace Microsoft.BotBuilderSamples.Controllers
             {
                 var activity = Activity.CreateMessageActivity();
                 activity.Text = "สถานะร้าน ปิด";
-                await turnContext.SendActivityAsync(activity);
+                //await turnContext.SendActivityAsync(activity);
                 var choices = new List<string> { "เปิดร้าน" };
-                var reply = MessageFactory.SuggestedActions(choices, "", null, InputHints.ExpectingInput);
+                var reply = MessageFactory.SuggestedActions(choices, activity.Text, null, InputHints.ExpectingInput);
                 await turnContext.SendActivityAsync(reply);
             }
         }
