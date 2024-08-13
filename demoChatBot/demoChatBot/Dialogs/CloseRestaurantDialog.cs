@@ -79,7 +79,7 @@ namespace DemoEchoBot.Dialogs
                 switch (data)
                 {
                     case "ยืนยันการปิดร้าน":
-                        message = "ยืนยันการปิดร้าน";
+                        message = "ปิดร้านเรียบร้อยแล้ว";
                         var confirmMessage = MessageFactory.Text(message, message, InputHints.ExpectingInput);
                         return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions { Prompt = confirmMessage }, cancellationToken);
                     case "ยกเลิกการปิดร้าน":

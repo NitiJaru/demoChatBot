@@ -28,6 +28,7 @@ namespace Microsoft.BotBuilderSamples.Controllers
 
         public NotifyController(IBotFrameworkHttpAdapter adapter, IConfiguration configuration, ConcurrentDictionary<string, ConversationReference> conversationReferences, IRestClientService restClientService)
         {
+
             _adapter = adapter;
             _restClientService = restClientService;
             _conversationReferences = conversationReferences;
@@ -86,7 +87,7 @@ namespace Microsoft.BotBuilderSamples.Controllers
                     Title = "ดูข้อมูลออเดอร์หรืออัพเดทสถานะออเดอร์",
                     Text = $"ผ่านจากลิงค์นี้ {resOrderApi}",
                     //Images = new List<CardImage> { new CardImage("https://failfast.blob.core.windows.net/upload/Delivery/openResturent_Rich_Message.png") },
-                    Buttons = new List<CardAction> { new CardAction(ActionTypes.OpenUrl, "เปิดลิงค์", value: resOrderApi)}
+                    Buttons = new List<CardAction> { new CardAction(ActionTypes.OpenUrl, "เปิดลิงค์", value: resOrderApi) }
                 };
 
                 var activity = turnContext.Activity.CreateReply();
@@ -158,6 +159,26 @@ namespace Microsoft.BotBuilderSamples.Controllers
                 await turnContext.SendActivityAsync("คำขอยกเลิกออเดอร์ไม่ได้รับการอนุมัติ");
             }
 
+        }
+
+        [HttpGet("{resId}")]
+        public async Task<IActionResult> CloseRestaurant(string resId)
+        {
+            foreach (var conversationReference in _conversationReferences.Values)
+            {
+                await ((BotAdapter)_adapter).ContinueConversationAsync(_appId, conversationReference, BotCallback, default(CancellationToken));
+            }
+            return Ok();
+
+            async Task BotCallback(ITurnContext turnContext, CancellationToken cancellationToken)
+            {
+                var activity = Activity.CreateMessageActivity();
+                activity.Text = "สถานะร้าน ปิด";
+                await turnContext.SendActivityAsync(activity);
+                var choices = new List<string> { "เปิดร้าน" };
+                var reply = MessageFactory.SuggestedActions(choices, "", null, InputHints.ExpectingInput);
+                await turnContext.SendActivityAsync(reply);
+            }
         }
 
     }
