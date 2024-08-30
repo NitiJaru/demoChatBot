@@ -3,11 +3,9 @@ using DemoEchoBot.Services;
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Builder.Dialogs.Choices;
-using Microsoft.Bot.Connector;
 using Microsoft.Bot.Schema;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -17,11 +15,10 @@ namespace DemoEchoBot.Dialogs
     {
         private readonly string APIBaseUrl = "https://delivery-3rd-test-api.azurewebsites.net";
         private RestaurantShortResponse _restaurantDetail;
+        private readonly IBotStateService _botStateService;
         private readonly IRestClientService _restClientService;
-        public CloseRestaurantDialog(IRestClientService restClientService) : base(nameof(CloseRestaurantDialog))
+        public CloseRestaurantDialog(IBotStateService botStateService, IRestClientService restClientService) : base(nameof(CloseRestaurantDialog))
         {
-            _restClientService = restClientService;
-
             AddDialog(new TextPrompt(nameof(TextPrompt)));
             AddDialog(new ChoicePrompt(nameof(ChoicePrompt)));
             AddDialog(new ConfirmPrompt(nameof(ConfirmPrompt)));
@@ -35,16 +32,18 @@ namespace DemoEchoBot.Dialogs
             };
 
             AddDialog(new WaterfallDialog(nameof(WaterfallDialog), waterfallSteps));
-
             InitialDialogId = nameof(WaterfallDialog);
+            _restClientService = restClientService;
+            _botStateService = botStateService;
         }
 
         private async Task<DialogTurnResult> CloseRestaurant(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
-            var baId = "594873324404759";
-            var resturnonAPI = $"{APIBaseUrl}/api/Restaurant/GetRestaurantInfo/{baId}";
+            var restaurantDetails = await _botStateService.UserDetailsAccessor.GetAsync(stepContext.Context, () => new RestaurantDetails(), cancellationToken);
+            var resturnonAPI = $"{APIBaseUrl}/api/Restaurant/GetRestaurantInfo/{restaurantDetails.BaId}";
             var respon = await _restClientService.Get<RestaurantShortResponse>(resturnonAPI);
-            _restaurantDetail = respon;
+            restaurantDetails.StatusRestaurant = respon.IsStandby;
+            await _botStateService.SaveChangesAsync(stepContext.Context);
             var data = (PaymentInfo)stepContext.Options;
             var attachments = new List<Attachment>();
 
@@ -64,11 +63,10 @@ namespace DemoEchoBot.Dialogs
 
         private async Task<DialogTurnResult> CheckstatusRestaurant(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
+            var restaurantDetails = await _botStateService.UserDetailsAccessor.GetAsync(stepContext.Context, () => new RestaurantDetails(), cancellationToken);
             var data = stepContext.Result.ToString();
             var message = "";
-            var resturnonAPI = $"{APIBaseUrl}/api/Restaurant/RestaurantStandbyTurnOff/{_restaurantDetail._id}";
-            await _restClientService.Post(resturnonAPI, string.Empty);
-            if (!_restaurantDetail.IsStandby)
+            if (!restaurantDetails.StatusRestaurant)
             {
                 var messageText = "คุณปิดร้านอยู่แล้ว";
                 var promptMessage = MessageFactory.Text(messageText, messageText, InputHints.IgnoringInput);
@@ -79,6 +77,8 @@ namespace DemoEchoBot.Dialogs
                 switch (data)
                 {
                     case "ยืนยันการปิดร้าน":
+                        var resturnonAPI = $"{APIBaseUrl}/api/Restaurant/RestaurantStandbyTurnOff/{restaurantDetails.RestaurantId}/?permanently=true";
+                        await _restClientService.Post(resturnonAPI, string.Empty);
                         message = "ปิดร้านเรียบร้อยแล้ว";
                         var confirmMessage = MessageFactory.Text(message, message, InputHints.ExpectingInput);
                         return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions { Prompt = confirmMessage }, cancellationToken);

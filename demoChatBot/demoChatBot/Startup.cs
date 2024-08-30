@@ -53,12 +53,17 @@ namespace demoChatBot
             services.AddSingleton<OpenRestaurantDialog>();
             services.AddSingleton<CloseRestaurantDialog>();
             services.AddSingleton<OrderRestaurantDialog>();
+            services.AddSingleton<LinkAccountDialog>();
             services.AddSingleton<MainDialog>();
+            services.AddSingleton<UserState>();
+
             //services.AddSingleton<ProactiveBot>();
             services.AddSingleton<ConcurrentDictionary<string, ConversationReference>>();
 
             services.AddTransient<IBot, DialogBot<MainDialog>>();
             services.AddTransient<IRestClientService, RestClientService>();
+            services.AddTransient<IBotStateService, BotStateService>();
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

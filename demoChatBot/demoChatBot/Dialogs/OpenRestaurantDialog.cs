@@ -19,13 +19,13 @@ namespace DemoEchoBot.Dialogs
     public class OpenRestaurantDialog : ComponentDialog
     {
         private readonly string APIBaseUrl = "https://delivery-3rd-test-api.azurewebsites.net";
+        private readonly IBotStateService _botStateService;
+        private readonly IRestClientService _restClientService;
         private RestaurantShortResponse _restaurantDetail;
 
-        private readonly IRestClientService _restClientService;
 
-        public OpenRestaurantDialog(IRestClientService restClientService) : base(nameof(OpenRestaurantDialog))
+        public OpenRestaurantDialog(IBotStateService botStateService, IRestClientService restClientService) : base(nameof(OpenRestaurantDialog))
         {
-            _restClientService = restClientService;
 
             AddDialog(new TextPrompt(nameof(TextPrompt)));
             AddDialog(new ChoicePrompt(nameof(ChoicePrompt)));
@@ -41,27 +41,17 @@ namespace DemoEchoBot.Dialogs
             AddDialog(new WaterfallDialog(nameof(WaterfallDialog), waterfallSteps));
 
             InitialDialogId = nameof(WaterfallDialog);
+            _restClientService = restClientService;
+            _botStateService = botStateService;
         }
 
         private async Task<DialogTurnResult> OpenRestaurant(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
-            var baId = "594873324404759";
-            var resturnonAPI = $"{APIBaseUrl}/api/Restaurant/GetRestaurantInfo/{baId}";
+            var restaurantDetails = await _botStateService.UserDetailsAccessor.GetAsync(stepContext.Context, () => new RestaurantDetails(), cancellationToken);
+            var resturnonAPI = $"{APIBaseUrl}/api/Restaurant/GetRestaurantInfo/{restaurantDetails.BaId}";
             var respon = await _restClientService.Get<RestaurantShortResponse>(resturnonAPI);
-            _restaurantDetail = respon;
-            //var data = (PaymentInfo)stepContext.Options;
-            //var attachments = new List<Attachment>();
-            //var heroCard = new HeroCard
-            //{
-            //    Title = "เปิดร้าน",
-            //    Text = "คุณต้องการเปิดร้านใช่หรือไม่",
-            //    Images = new List<CardImage> { new CardImage("https://failfast.blob.core.windows.net/upload/Delivery/openResturent_Rich_Message.png") },
-            //    Buttons = new List<CardAction> { new CardAction(ActionTypes.ImBack, "ยืนยัน", value: "ยืนยันการเปิดร้าน"), new CardAction(ActionTypes.ImBack, "ยกเลิก", value: "ยกเลิกการเปิดร้าน") }
-            //};
-            //attachments.Add(heroCard.ToAttachment());
-            //var reply = MessageFactory.Attachment(attachments);
-
-            //return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions { Prompt = (Activity)reply });
+            restaurantDetails.StatusRestaurant = respon.IsStandby;
+            await _botStateService.SaveChangesAsync(stepContext.Context);
 
             return await stepContext.PromptAsync(nameof(ChoicePrompt), new PromptOptions
             {
@@ -76,10 +66,11 @@ namespace DemoEchoBot.Dialogs
 
         private async Task<DialogTurnResult> CheckstatusRestaurant(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
+            var restaurantDetails = await _botStateService.UserDetailsAccessor.GetAsync(stepContext.Context, () => new RestaurantDetails(), cancellationToken);
             var data = stepContext.Context.Activity.Text;
             var message = "";
 
-            if (_restaurantDetail.IsStandby)
+            if (restaurantDetails.StatusRestaurant)
             {
                 var messageText = "ร้านเปิดร้านอยู่แล้ว";
                 var promptMessage = MessageFactory.Text(messageText, messageText, InputHints.IgnoringInput);
@@ -92,14 +83,13 @@ namespace DemoEchoBot.Dialogs
                     case "ยืนยัน":
                         message = "เปิดร้านเรียบร้อยแล้ว";
                         var confirmMessage = MessageFactory.Text(message, message, InputHints.ExpectingInput);
-                        var resturnonAPI = $"{APIBaseUrl}/api/Restaurant/RestaurantStandbyTurnOn/{_restaurantDetail._id}";
+                        var resturnonAPI = $"{APIBaseUrl}/api/Restaurant/RestaurantStandbyTurnOn/{restaurantDetails.RestaurantId}";
                         await _restClientService.Post(resturnonAPI, string.Empty);
                         return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions { Prompt = confirmMessage }, cancellationToken);
                     case "ยกเลิก":
                         message = "ยกเลิกการเปิดร้าน";
                         var cancleMessage = MessageFactory.Text(message, message, InputHints.ExpectingInput);
                         return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions { Prompt = cancleMessage }, cancellationToken);
-
                     default:
                         break;
                 }

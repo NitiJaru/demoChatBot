@@ -7,7 +7,9 @@ using System.Collections.Generic;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using demoChatBot.Models;
 using DemoEchoBot.Services;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Integration.AspNet.Core;
@@ -21,14 +23,15 @@ namespace Microsoft.BotBuilderSamples.Controllers
     public class NotifyController : ControllerBase
     {
         private readonly string APIBaseUrl = "https://delivery-3rd-test-api.azurewebsites.net";
+        private readonly IBotStateService _botStateService;
         private readonly IRestClientService _restClientService;
         private readonly IBotFrameworkHttpAdapter _adapter;
         private readonly string _appId;
         private readonly ConcurrentDictionary<string, ConversationReference> _conversationReferences;
 
-        public NotifyController(IBotFrameworkHttpAdapter adapter, IConfiguration configuration, ConcurrentDictionary<string, ConversationReference> conversationReferences, IRestClientService restClientService)
+        public NotifyController(IBotStateService botStateService, IBotFrameworkHttpAdapter adapter, IConfiguration configuration, ConcurrentDictionary<string, ConversationReference> conversationReferences, IRestClientService restClientService)
         {
-
+            _botStateService = botStateService;
             _adapter = adapter;
             _restClientService = restClientService;
             _conversationReferences = conversationReferences;
@@ -53,21 +56,25 @@ namespace Microsoft.BotBuilderSamples.Controllers
 
         private async Task BotCallback(ITurnContext turnContext, CancellationToken cancellationToken)
         {
+            IMessageActivity messageActivity;
+            var image = new CardImage("https://failfast.blob.core.windows.net/upload/Delivery/openResturent_Rich_Message.png");
+            var buttondetail = new List<CardAction> { new CardAction(ActionTypes.ImBack, "ยืนยัน", value: "ยืนยันการเปิดร้าน"), new CardAction(ActionTypes.ImBack, "ยกเลิก", value: "ยกเลิกการเปิดร้าน") };
+            messageActivity = getHeroCard("พิเศษ", "คุณต้องการยกเลิกใช่หรือไม่", "", image, buttondetail);
             //await turnContext.SendActivityAsync("proactive hello");
-            var heroCard = new HeroCard
-            {
-                Title = "พิเศษ",
-                Text = "คุณต้องการยกเลิกใช่หรือไม่",
-                //Images = new List<CardImage> { new CardImage("https://failfast.blob.core.windows.net/upload/Delivery/openResturent_Rich_Message.png") },
-                Buttons = new List<CardAction> { new CardAction(ActionTypes.ImBack, "ยืนยัน", value: "ยืนยันการเปิดร้าน"), new CardAction(ActionTypes.ImBack, "ยกเลิก", value: "ยกเลิกการเปิดร้าน") }
-            };
+            //var heroCard = new HeroCard
+            //{
+            //    Title = "พิเศษ",
+            //    Text = "คุณต้องการยกเลิกใช่หรือไม่",
+            //    //Images = new List<CardImage> { new CardImage("https://failfast.blob.core.windows.net/upload/Delivery/openResturent_Rich_Message.png") },
+            //    Buttons = new List<CardAction> { new CardAction(ActionTypes.ImBack, "ยืนยัน", value: "ยืนยันการเปิดร้าน"), new CardAction(ActionTypes.ImBack, "ยกเลิก", value: "ยกเลิกการเปิดร้าน") }
+            //};
 
-            // Create a new activity with the Hero Card attachment
-            var activity = turnContext.Activity.CreateReply();
-            activity.Attachments = new[] { heroCard.ToAttachment() };
-            activity.Text = "ยืนยันการเปิดร้าน";
+            ////Create a new activity with the Hero Card attachment
+            //var activity = turnContext.Activity.CreateReply();
+            //activity.Attachments = new[] { heroCard.ToAttachment() };
+            //activity.Text = "ยืนยันการเปิดร้าน";
             // Send the activity
-            await turnContext.SendActivityAsync(activity, cancellationToken);
+            await turnContext.SendActivityAsync(messageActivity, cancellationToken);
         }
 
         [HttpGet("{resId}")]
@@ -81,27 +88,19 @@ namespace Microsoft.BotBuilderSamples.Controllers
 
             async Task BotCallback(ITurnContext turnContext, CancellationToken cancellationToken)
             {
-                var resOrderApi = $"https://devster-delivery-test.onmana.space/apprestaurant/index.html#/order-main";
-                var heroCard = new HeroCard
-                {
-                    Title = "ดูข้อมูลออเดอร์หรืออัพเดทสถานะออเดอร์",
-                    Text = $"ผ่านจากลิงค์นี้ {resOrderApi}",
-                    //Images = new List<CardImage> { new CardImage("https://failfast.blob.core.windows.net/upload/Delivery/openResturent_Rich_Message.png") },
-                    Buttons = new List<CardAction> { new CardAction(ActionTypes.OpenUrl, "เปิดลิงค์", value: resOrderApi) }
-                };
-
-                var activity = turnContext.Activity.CreateReply();
-                activity.Attachments = new[] { heroCard.ToAttachment() };
-                await turnContext.SendActivityAsync(activity, cancellationToken);
+                var userDetails = await _botStateService.UserDetailsAccessor.GetAsync(turnContext, () => new RestaurantDetails(), cancellationToken);
+                if (userDetails.RestaurantId != resId) return;
+                IMessageActivity messageActivity;
+                var resOrderApi = $"https://liff.line.me/2006157455-3dNXrwAO#order-main";
+                var button = new List<CardAction> { new CardAction(ActionTypes.OpenUrl, "เปิดลิงค์", value: resOrderApi) };
+                messageActivity = getHeroCard("ดูข้อมูลออเดอร์หรืออัพเดทสถานะออเดอร์", "", resOrderApi, null, button);
+                await turnContext.SendActivityAsync(messageActivity, cancellationToken);
             }
         }
-
 
         [HttpGet("{resId}")]
         public async Task<IActionResult> UpdateMenu(string resId)
         {
-            var resDetailsApi = $"https://jsonplaceholder.typicode.com/todos/1";
-            var request = await _restClientService.Get<object>(resDetailsApi);
             foreach (var conversationReference in _conversationReferences.Values)
             {
                 await ((BotAdapter)_adapter).ContinueConversationAsync(_appId, conversationReference, BotCallback, default(CancellationToken));
@@ -110,16 +109,14 @@ namespace Microsoft.BotBuilderSamples.Controllers
 
             async Task BotCallback(ITurnContext turnContext, CancellationToken cancellationToken)
             {
-                var heroCard = new HeroCard
-                {
-                    Title = "มีเมนูอัพเดท",
-                    Images = new List<CardImage> { new CardImage("https://failfast.blob.core.windows.net/upload/Delivery/newupdate.png") },
-                    Buttons = new List<CardAction> { new CardAction(ActionTypes.OpenUrl, "ดูรายละเอียด", value: "https://devster-delivery-test.onmana.space/apprestaurant/index.html#/menuupdate-main") }
-                };
-
-                var activity = turnContext.Activity.CreateReply();
-                activity.Attachments = new[] { heroCard.ToAttachment() };
-                await turnContext.SendActivityAsync(activity, cancellationToken);
+                var userDetails = await _botStateService.UserDetailsAccessor.GetAsync(turnContext, () => new RestaurantDetails(), cancellationToken);
+                if (userDetails.RestaurantId != resId) return;
+                IMessageActivity messageActivity;
+                var resOrderApi = $"https://liff.line.me/2006157455-3dNXrwAO#menuupdate-main";
+                var image = new CardImage("https://failfast.blob.core.windows.net/upload/Delivery/newupdate.png");
+                var button = new List<CardAction> { new CardAction(ActionTypes.OpenUrl, "เปิดลิงค์", value: resOrderApi) };
+                messageActivity = getHeroCard("มีเมนูอัพเดท", "", resOrderApi, image, button);
+                await turnContext.SendActivityAsync(messageActivity, cancellationToken);
             }
 
         }
@@ -127,8 +124,6 @@ namespace Microsoft.BotBuilderSamples.Controllers
         [HttpGet("{resId}")]
         public async Task<IActionResult> CancleOrderByAdmin(string resId)
         {
-            var resDetailsApi = $"https://jsonplaceholder.typicode.com/todos/1";
-            var request = await _restClientService.Get<object>(resDetailsApi);
             foreach (var conversationReference in _conversationReferences.Values)
             {
                 await ((BotAdapter)_adapter).ContinueConversationAsync(_appId, conversationReference, BotCallback, default(CancellationToken));
@@ -137,6 +132,8 @@ namespace Microsoft.BotBuilderSamples.Controllers
 
             async Task BotCallback(ITurnContext turnContext, CancellationToken cancellationToken)
             {
+                var userDetails = await _botStateService.UserDetailsAccessor.GetAsync(turnContext, () => new RestaurantDetails(), cancellationToken);
+                if (userDetails.RestaurantId != resId) return;
                 await turnContext.SendActivityAsync("คำขอยกเลิกออเดอร์ได้รับการอนุมัติแล้ว");
 
             }
@@ -146,8 +143,6 @@ namespace Microsoft.BotBuilderSamples.Controllers
         [HttpGet("{resId}")]
         public async Task<IActionResult> DenyOrderByAdmin(string resId)
         {
-            var resDetailsApi = $"https://jsonplaceholder.typicode.com/todos/1";
-            var request = await _restClientService.Get<object>(resDetailsApi);
             foreach (var conversationReference in _conversationReferences.Values)
             {
                 await ((BotAdapter)_adapter).ContinueConversationAsync(_appId, conversationReference, BotCallback, default(CancellationToken));
@@ -156,6 +151,8 @@ namespace Microsoft.BotBuilderSamples.Controllers
 
             async Task BotCallback(ITurnContext turnContext, CancellationToken cancellationToken)
             {
+                var userDetails = await _botStateService.UserDetailsAccessor.GetAsync(turnContext, () => new RestaurantDetails(), cancellationToken);
+                if (userDetails.RestaurantId != resId) return;
                 await turnContext.SendActivityAsync("คำขอยกเลิกออเดอร์ไม่ได้รับการอนุมัติ");
             }
 
@@ -172,6 +169,8 @@ namespace Microsoft.BotBuilderSamples.Controllers
 
             async Task BotCallback(ITurnContext turnContext, CancellationToken cancellationToken)
             {
+                var userDetails = await _botStateService.UserDetailsAccessor.GetAsync(turnContext, () => new RestaurantDetails(), cancellationToken);
+                if (userDetails.RestaurantId != resId) return;
                 var activity = Activity.CreateMessageActivity();
                 activity.Text = "สถานะร้าน ปิด";
                 //await turnContext.SendActivityAsync(activity);
@@ -181,5 +180,68 @@ namespace Microsoft.BotBuilderSamples.Controllers
             }
         }
 
+        [HttpGet("{resId}/{botUserId}/{isApprove}")]
+        public async Task<IActionResult> LinkRestaurantAccount(string resId, string botUserId, bool isApprove)
+        {
+            foreach (var conversationReference in _conversationReferences.Values)
+            {
+                await ((BotAdapter)_adapter).ContinueConversationAsync(_appId, conversationReference, BotCallback, default(CancellationToken));
+            }
+            return Ok();
+
+            async Task BotCallback(ITurnContext turnContext, CancellationToken cancellationToken)
+            {
+                var activity = Activity.CreateMessageActivity();
+                if (turnContext.Activity.From.Id != botUserId) return;
+                if (isApprove)
+                {
+                    var restaurantDetails = await _botStateService.UserDetailsAccessor.GetAsync(turnContext, () => new RestaurantDetails(), cancellationToken);
+                    var resturnonAPI = $"{APIBaseUrl}/api/Restaurant/GetRestaurantInfo/{resId}";
+                    var respon = await _restClientService.Get<RestaurantShortResponse>(resturnonAPI);
+                    restaurantDetails.RestaurantName = respon.Name;
+                    restaurantDetails.IsLinkedAccount = true;
+                    restaurantDetails.BaId = resId;
+                    restaurantDetails.RestaurantId = respon._id;
+                    restaurantDetails.StatusRestaurant = respon.IsStandby;
+                    var textstatus = restaurantDetails.StatusRestaurant ? "เปิดอยู่" : "ปิดอยู่";
+                    activity.Text = $"คุณ {respon.Name} ได้ทำการผูก line account กับ mana เรียบร้อยแล้ว สถานะร้านค้า {textstatus}";
+                    await _botStateService.SaveChangesAsync(turnContext);
+                    await turnContext.SendActivityAsync(activity);
+                }
+                else
+                {
+                    IMessageActivity messageActivity;
+                    var button = new List<CardAction> { new(ActionTypes.ImBack, title: "เริ่มผูกบัญชีใหม่", value: "") };
+                    messageActivity = getHeroCard("คุณถูกปฎิเสธการผูก line account กับ mana", "", "", null, button);
+                    await turnContext.SendActivityAsync(messageActivity, cancellationToken);
+                }
+            }
+        }
+        private IMessageActivity getHeroCard(string title, string subtitle, string url, CardImage imagecard, List<CardAction> buttondetail)
+        {
+            if (imagecard is not null)
+            {
+                var card = new HeroCard
+                {
+                    Title = title,
+                    Subtitle = $"ดูผ่านจากลิงค์นี้ {url}",
+                    Images = new List<CardImage> { imagecard },
+                    Buttons = buttondetail
+                };
+                var attachment = card.ToAttachment();
+                return MessageFactory.Attachment(attachment);
+            }
+            else
+            {
+                var card = new HeroCard
+                {
+                    Title = title,
+                    Subtitle = $"ดูผ่านจากลิงค์นี้ {url}",
+                    Buttons = buttondetail
+                };
+                var attachment = card.ToAttachment();
+                return MessageFactory.Attachment(attachment);
+            }
+        }
     }
 }

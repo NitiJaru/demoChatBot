@@ -15,6 +15,8 @@ namespace demoChatBot.Models
         public string Classification { get; set; }
         public double PredictDeliveryTotalMinutes { get; set; }
         public bool IsStandby { get; set; }
+        public string BusinessAccountId { get; set; }
+
     }
 
     public class ManaDisplayResList : Paging

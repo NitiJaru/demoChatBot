@@ -8,6 +8,7 @@ using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Schema;
 using Microsoft.Bot.Schema.Teams;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -18,16 +19,34 @@ namespace DemoEchoBot.Bots
     {
         protected readonly Dialog Dialog;
         protected readonly BotState ConversationState;
+        protected readonly BotState UserState;
         private readonly ConcurrentDictionary<string, ConversationReference> ConversationReferences;
 
         public DialogBot(ConversationState conversationState
             , ConcurrentDictionary<string, ConversationReference> conversationReferences
+            , UserState userState
             , T dialog)
         {
             ConversationState = conversationState;
             ConversationReferences = conversationReferences;
             Dialog = dialog;
+            UserState = userState;
         }
+
+        protected override async Task OnMembersAddedAsync(IList<ChannelAccount> membersAdded, ITurnContext<IConversationUpdateActivity> turnContext, CancellationToken cancellationToken)
+        {
+            foreach (var member in membersAdded)
+            {
+                if (member.Id != turnContext.Activity.Recipient.Id)
+                {
+                    var lineUserId = member.Id;
+                    //var response = MessageFactory.Text($"Welcome lineUser ID: {lineUserId}");
+                    //await turnContext.SendActivityAsync(response, cancellationToken);
+                    await Dialog.RunAsync(turnContext, ConversationState.CreateProperty<DialogState>("DialogState"), cancellationToken);
+                }
+            }
+        }
+
         public override async Task OnTurnAsync(ITurnContext turnContext, CancellationToken cancellationToken = default(CancellationToken))
         {
             await base.OnTurnAsync(turnContext, cancellationToken);
