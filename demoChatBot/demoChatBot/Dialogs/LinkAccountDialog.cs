@@ -51,8 +51,6 @@ namespace DemoEchoBot.Dialogs
                 ContentUrl = session.Url,
             });
 
-            await stepContext.Context.SendActivityAsync(reply, cancellationToken);
-
             var card = new HeroCard
             {
                 Title = "กรุณาแสกน qr ผูกบัญชีกับมานะ เพื่อเข้าใช้งานระบบ",
@@ -66,6 +64,7 @@ namespace DemoEchoBot.Dialogs
                 Prompt = (Activity)MessageFactory.Attachment(card.ToAttachment()),
                 Style = ListStyle.HeroCard,
             };
+            await stepContext.Context.SendActivityAsync(reply, cancellationToken);
             return await stepContext.PromptAsync(nameof(TextPrompt), promptOptions, cancellationToken);
         }
         private async Task<DialogTurnResult> FinalStepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)

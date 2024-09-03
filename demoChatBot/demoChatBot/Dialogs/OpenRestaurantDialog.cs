@@ -85,6 +85,9 @@ namespace DemoEchoBot.Dialogs
                         var confirmMessage = MessageFactory.Text(message, message, InputHints.ExpectingInput);
                         var resturnonAPI = $"{APIBaseUrl}/api/Restaurant/RestaurantStandbyTurnOn/{restaurantDetails.RestaurantId}";
                         await _restClientService.Post(resturnonAPI, string.Empty);
+                        //update data store
+                        restaurantDetails.StatusRestaurant = true;
+                        await _botStateService.SaveChangesAsync(stepContext.Context);
                         return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions { Prompt = confirmMessage }, cancellationToken);
                     case "ยกเลิก":
                         message = "ยกเลิกการเปิดร้าน";

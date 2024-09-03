@@ -180,6 +180,45 @@ namespace Microsoft.BotBuilderSamples.Controllers
             }
         }
 
+        [HttpGet("{resId}")]
+        public async Task<IActionResult> OpenRestaurantByAdmin(string resId)
+        {
+            foreach (var conversationReference in _conversationReferences.Values)
+            {
+                await ((BotAdapter)_adapter).ContinueConversationAsync(_appId, conversationReference, BotCallback, default(CancellationToken));
+            }
+            return Ok();
+
+            async Task BotCallback(ITurnContext turnContext, CancellationToken cancellationToken)
+            {
+                var userDetails = await _botStateService.UserDetailsAccessor.GetAsync(turnContext, () => new RestaurantDetails(), cancellationToken);
+                if (userDetails.RestaurantId != resId) return;
+                await turnContext.SendActivityAsync("สถานะร้านถูกเปิดจากแอดมิน");
+            }
+        }
+
+        [HttpGet("{resId}")]
+        public async Task<IActionResult> CloseRestaurantByAdmin(string resId)
+        {
+            foreach (var conversationReference in _conversationReferences.Values)
+            {
+                await ((BotAdapter)_adapter).ContinueConversationAsync(_appId, conversationReference, BotCallback, default(CancellationToken));
+            }
+            return Ok();
+
+            async Task BotCallback(ITurnContext turnContext, CancellationToken cancellationToken)
+            {
+                var userDetails = await _botStateService.UserDetailsAccessor.GetAsync(turnContext, () => new RestaurantDetails(), cancellationToken);
+                if (userDetails.RestaurantId != resId) return;
+                var activity = Activity.CreateMessageActivity();
+                activity.Text = "สถานะร้านถูกปิดจากแอดมิน";
+                //await turnContext.SendActivityAsync(activity);
+                var choices = new List<string> { "เปิดร้าน" };
+                var reply = MessageFactory.SuggestedActions(choices, activity.Text, null, InputHints.ExpectingInput);
+                await turnContext.SendActivityAsync(reply);
+            }
+        }
+
         [HttpGet("{resId}/{botUserId}/{isApprove}")]
         public async Task<IActionResult> LinkRestaurantAccount(string resId, string botUserId, bool isApprove)
         {
@@ -211,7 +250,7 @@ namespace Microsoft.BotBuilderSamples.Controllers
                 else
                 {
                     IMessageActivity messageActivity;
-                    var button = new List<CardAction> { new(ActionTypes.ImBack, title: "เริ่มผูกบัญชีใหม่", value: "") };
+                    var button = new List<CardAction> { new(ActionTypes.PostBack, title: "เริ่มผูกบัญชีใหม่", value: false) };
                     messageActivity = getHeroCard("คุณถูกปฎิเสธการผูก line account กับ mana", "", "", null, button);
                     await turnContext.SendActivityAsync(messageActivity, cancellationToken);
                 }

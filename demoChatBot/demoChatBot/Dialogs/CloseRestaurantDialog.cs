@@ -77,10 +77,12 @@ namespace DemoEchoBot.Dialogs
                 switch (data)
                 {
                     case "ยืนยันการปิดร้าน":
-                        var resturnonAPI = $"{APIBaseUrl}/api/Restaurant/RestaurantStandbyTurnOff/{restaurantDetails.RestaurantId}/?permanently=true";
-                        await _restClientService.Post(resturnonAPI, string.Empty);
                         message = "ปิดร้านเรียบร้อยแล้ว";
                         var confirmMessage = MessageFactory.Text(message, message, InputHints.ExpectingInput);
+                        var resturnonAPI = $"{APIBaseUrl}/api/Restaurant/RestaurantStandbyTurnOff/{restaurantDetails.RestaurantId}/?permanently=true";
+                        await _restClientService.Post(resturnonAPI, string.Empty);
+                        restaurantDetails.StatusRestaurant = false;
+                        await _botStateService.SaveChangesAsync(stepContext.Context);
                         return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions { Prompt = confirmMessage }, cancellationToken);
                     case "ยกเลิกการปิดร้าน":
                         message = "ยกเลิกการปิดร้าน";

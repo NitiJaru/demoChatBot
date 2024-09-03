@@ -10,6 +10,7 @@ using System.Linq;
 using demoChatBot.Models;
 using Newtonsoft.Json.Linq;
 using DemoEchoBot.Services;
+using Microsoft.AspNetCore.DataProtection.XmlEncryption;
 
 namespace DemoEchoBot.Dialogs
 {
@@ -31,6 +32,7 @@ namespace DemoEchoBot.Dialogs
             AddDialog(closeRestaurantDialog);
             AddDialog(orderRestaurantDialog);
             AddDialog(linkAccountDialog);
+            AddDialog(new ChoicePrompt(nameof(ChoicePrompt)));
 
             var waterfallSteps = new WaterfallStep[]
             {
@@ -72,6 +74,7 @@ namespace DemoEchoBot.Dialogs
             {
                 var userId = stepContext.Context.Activity.From.Id;
                 var resturnonAPI = $"{APIBaseUrl}/api/Restaurant/GetRestaurantInfoWithChatBotId/{userId}";
+                //var resturnonAPI = $"{APIBaseUrl}/api/Restaurant/GetRestaurantInfoWithChatBotId/Ubfd3c807882bc79ae26cf2d62c4e8c1d";
                 var rspdata = await _restClientService.Get<RestaurantShortResponse>(resturnonAPI);
                 if (rspdata is null) return;
                 var restaurantDetails = await _botStateService.UserDetailsAccessor.GetAsync(stepContext.Context, () => new RestaurantDetails(), cancellationToken);
@@ -86,6 +89,7 @@ namespace DemoEchoBot.Dialogs
 
         private async Task<DialogTurnResult> ActStepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
+
             var restaurantDetails = await _botStateService.UserDetailsAccessor.GetAsync(stepContext.Context, () => new RestaurantDetails(), cancellationToken);
 
             var attachments = new List<Attachment>();
@@ -101,6 +105,20 @@ namespace DemoEchoBot.Dialogs
                         return await stepContext.BeginDialogAsync(nameof(CloseRestaurantDialog), new PaymentInfo { Operation = data }, cancellationToken);
                     case null:
                         return await stepContext.EndDialogAsync(null, cancellationToken);
+                    case "reset":
+                        restaurantDetails = await _botStateService.UserDetailsAccessor.GetAsync(stepContext.Context, () => new RestaurantDetails(), cancellationToken);
+                        restaurantDetails.IsLinkedAccount = false;
+                        await _botStateService.SaveChangesAsync(stepContext.Context);
+
+                        // Restart the main dialog with a different message the second time around
+                        return await stepContext.ReplaceDialogAsync(InitialDialogId, "Reset BOT", cancellationToken);
+                    case "ติดต่อ":
+                        //messageText = $"Admin {_employeeDetails.DeliveryName} deilvery{Environment.NewLine}{_employeeDetails.PhoneNumber}";
+                        //promptMessage = MessageFactory.Text(messageText, messageText);
+                        //await stepContext.Context.SendActivityAsync(promptMessage, cancellationToken);
+                        await stepContext.Context.SendActivityAsync(MessageFactory.Text($"Admin DeliveryName deilvery{Environment.NewLine}  PhoneNumber"));
+                        return await stepContext.EndDialogAsync();
+
                     //case "ออเดอร์":
                     //    return await stepContext.BeginDialogAsync(nameof(OrderRestaurantDialog), new PaymentInfo { Operation = data }, cancellationToken);
                     //case "อัพเดท":
@@ -173,8 +191,24 @@ namespace DemoEchoBot.Dialogs
                     //    reply.Attachments.Add(contractheroCard.ToAttachment());
                     //    return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions { Prompt = (Activity)reply });
                     default:
-                        await stepContext.Context.SendActivityAsync(MessageFactory.Text("ระบบไม่เข้าใจ ลองใช้คำอื่นแทนดูไหม? ❤️\""));
-                        return await stepContext.EndDialogAsync(null, cancellationToken);
+                        if (restaurantDetails.StatusRestaurant)
+                        {
+                            await stepContext.Context.SendActivityAsync(MessageFactory.Text($"สถานะร้าน เปิด"));
+                            return await stepContext.EndDialogAsync(null, cancellationToken);
+                        }
+                        else
+                        {
+                            var messageText = $"สถานะร้าน ปิด";
+                            var promptMessage = MessageFactory.Text(messageText, messageText, InputHints.ExpectingInput);
+                            return await stepContext.PromptAsync(nameof(ChoicePrompt), new PromptOptions
+                            {
+                                Prompt = promptMessage,
+                                Choices = new[]
+                                {
+                                    new Choice { Value = "เปิดร้าน" }
+                                }
+                            }, cancellationToken);
+                        }
                 }
             }
             else
