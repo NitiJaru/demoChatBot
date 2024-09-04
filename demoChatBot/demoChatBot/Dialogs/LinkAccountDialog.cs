@@ -55,7 +55,7 @@ namespace DemoEchoBot.Dialogs
             {
                 Title = "กรุณาแสกน qr ผูกบัญชีกับมานะ เพื่อเข้าใช้งานระบบ",
                 Buttons = new List<CardAction> {
-                    new(ActionTypes.OpenUrl, title: "เปิดแอพ มานะ", value: "https://www.google.com/")
+                    new(ActionTypes.OpenUrl, title: "เปิดแอพ มานะ", value: $"https://failfast.blob.core.windows.net/upload/demoDeeplink/openapp.html?np_url={session.Url}")
                 }
             };
 

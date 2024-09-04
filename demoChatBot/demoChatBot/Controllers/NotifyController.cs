@@ -193,6 +193,8 @@ namespace Microsoft.BotBuilderSamples.Controllers
             {
                 var userDetails = await _botStateService.UserDetailsAccessor.GetAsync(turnContext, () => new RestaurantDetails(), cancellationToken);
                 if (userDetails.RestaurantId != resId) return;
+                userDetails.StatusRestaurant = true;
+                await _botStateService.SaveChangesAsync(turnContext);
                 await turnContext.SendActivityAsync("สถานะร้านถูกเปิดจากแอดมิน");
             }
         }
@@ -215,6 +217,8 @@ namespace Microsoft.BotBuilderSamples.Controllers
                 //await turnContext.SendActivityAsync(activity);
                 var choices = new List<string> { "เปิดร้าน" };
                 var reply = MessageFactory.SuggestedActions(choices, activity.Text, null, InputHints.ExpectingInput);
+                userDetails.StatusRestaurant = false;
+                await _botStateService.SaveChangesAsync(turnContext);
                 await turnContext.SendActivityAsync(reply);
             }
         }

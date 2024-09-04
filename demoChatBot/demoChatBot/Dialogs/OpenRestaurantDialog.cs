@@ -72,8 +72,8 @@ namespace DemoEchoBot.Dialogs
 
             if (restaurantDetails.StatusRestaurant)
             {
-                var messageText = "ร้านเปิดร้านอยู่แล้ว";
-                var promptMessage = MessageFactory.Text(messageText, messageText, InputHints.IgnoringInput);
+                message = "ร้านเปิดร้านอยู่แล้ว";
+                var promptMessage = MessageFactory.Text(message, message, InputHints.IgnoringInput);
                 return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions { Prompt = promptMessage });
             }
             else
@@ -85,7 +85,6 @@ namespace DemoEchoBot.Dialogs
                         var confirmMessage = MessageFactory.Text(message, message, InputHints.ExpectingInput);
                         var resturnonAPI = $"{APIBaseUrl}/api/Restaurant/RestaurantStandbyTurnOn/{restaurantDetails.RestaurantId}";
                         await _restClientService.Post(resturnonAPI, string.Empty);
-                        //update data store
                         restaurantDetails.StatusRestaurant = true;
                         await _botStateService.SaveChangesAsync(stepContext.Context);
                         return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions { Prompt = confirmMessage }, cancellationToken);
