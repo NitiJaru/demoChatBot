@@ -41,6 +41,7 @@ namespace DemoEchoBot.Dialogs
         {
 
             var userId = stepContext.Context.Activity.From.Id;
+            //var userId = "U179c44c17b333868c6d7aab073e0f0fa";
             var userName = stepContext.Context.Activity.From.Name;
             var sessionRequest = $"{APIBaseUrl}/api/Restaurant/LinkRequest/line/{userId}/{userName}";
             var session = await _restClientService.Get<Session>(sessionRequest);

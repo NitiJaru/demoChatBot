@@ -11,6 +11,9 @@ using demoChatBot.Models;
 using Newtonsoft.Json.Linq;
 using DemoEchoBot.Services;
 using Microsoft.AspNetCore.DataProtection.XmlEncryption;
+using Flurl.Http;
+using System.Net.Http;
+using MongoDB.Driver.Core.Configuration;
 
 namespace DemoEchoBot.Dialogs
 {
@@ -51,7 +54,8 @@ namespace DemoEchoBot.Dialogs
 
         private async Task<DialogTurnResult> IntroStepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
-
+            var userId = stepContext.Context.Activity.From.Id;
+            //var userId = "U179c44c17b333868c6d7aab073e0f0fa";
             var restaurantDetails = await _botStateService.UserDetailsAccessor.GetAsync(stepContext.Context, () => new RestaurantDetails(), cancellationToken);
 
             if (restaurantDetails.IsLinkedAccount)
@@ -59,7 +63,7 @@ namespace DemoEchoBot.Dialogs
                 if (_restaurantDetails is null)
                 {
                     var resturnonAPI = $"{APIBaseUrl}/api/Restaurant/GetRestaurantInfo/{restaurantDetails.BaId}";
-                    _restaurantDetails = await _restClientService.Get<RestaurantShortResponse>(resturnonAPI);
+                    _restaurantDetails = await _restClientService.Get<RestaurantShortResponse>(resturnonAPI, userId);
                 }
                 return await stepContext.NextAsync(null, cancellationToken);
             }
@@ -67,37 +71,41 @@ namespace DemoEchoBot.Dialogs
             {
                 await TryGetUserDetail();
                 return await stepContext.NextAsync(null, cancellationToken);
-
-
             }
             async Task TryGetUserDetail()
             {
-                var userId = stepContext.Context.Activity.From.Id;
-                var resturnonAPI = $"{APIBaseUrl}/api/Restaurant/GetRestaurantInfoWithChatBotId/{userId}";
-                //var resturnonAPI = $"{APIBaseUrl}/api/Restaurant/GetRestaurantInfoWithChatBotId/Ubfd3c807882bc79ae26cf2d62c4e8c1d";
-                var rspdata = await _restClientService.Get<RestaurantShortResponse>(resturnonAPI);
-                if (rspdata is null) return;
                 var restaurantDetails = await _botStateService.UserDetailsAccessor.GetAsync(stepContext.Context, () => new RestaurantDetails(), cancellationToken);
+                //var userId = stepContext.Context.Activity.From.Id;
+                var resturnonAPI = $"{APIBaseUrl}/api/Restaurant/GetRestaurantInfoWithChatBotId";
+                var rspdata = await _restClientService.Get<RestaurantShortResponse>(resturnonAPI, userId);
+                if (rspdata is null) return;
                 restaurantDetails.IsLinkedAccount = true;
                 restaurantDetails.StatusRestaurant = rspdata.IsStandby;
                 restaurantDetails.RestaurantId = rspdata._id;
                 restaurantDetails.RestaurantName = rspdata.Name;
                 restaurantDetails.BaId = rspdata.BusinessAccountId;
                 await _botStateService.SaveChangesAsync(stepContext.Context);
+                //if (stepContext.Context.Activity.Text.ToLower() == "reset" || stepContext.Context.Activity.Text is null)
+                //{
+                //    restaurantDetails.IsLinkedAccount = false;
+                //    await _botStateService.SaveChangesAsync(stepContext.Context);
+                //}
+                //else
+                //{
+                //}
             }
         }
 
         private async Task<DialogTurnResult> ActStepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
-
+            var userId = stepContext.Context.Activity.From.Id;
             var restaurantDetails = await _botStateService.UserDetailsAccessor.GetAsync(stepContext.Context, () => new RestaurantDetails(), cancellationToken);
-
             var attachments = new List<Attachment>();
             var reply = MessageFactory.Attachment(attachments);
             var data = stepContext.Context.Activity.Text;
             if (restaurantDetails.IsLinkedAccount)
             {
-                switch (data)
+                switch (data.ToLower())
                 {
                     case "เปิดร้าน":
                         return await stepContext.BeginDialogAsync(nameof(OpenRestaurantDialog), new PaymentInfo { Operation = data }, cancellationToken);
@@ -109,7 +117,8 @@ namespace DemoEchoBot.Dialogs
                         restaurantDetails = await _botStateService.UserDetailsAccessor.GetAsync(stepContext.Context, () => new RestaurantDetails(), cancellationToken);
                         restaurantDetails.IsLinkedAccount = false;
                         await _botStateService.SaveChangesAsync(stepContext.Context);
-
+                        var resetApi = $"{APIBaseUrl}/api/Restaurant/LinkedRemove/{userId}";
+                        await _restClientService.Post(resetApi, string.Empty, userId);
                         // Restart the main dialog with a different message the second time around
                         return await stepContext.ReplaceDialogAsync(InitialDialogId, "Reset BOT", cancellationToken);
                     case "ติดต่อ":

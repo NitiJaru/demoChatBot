@@ -47,9 +47,10 @@ namespace DemoEchoBot.Dialogs
 
         private async Task<DialogTurnResult> OpenRestaurant(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
+            var userId = stepContext.Context.Activity.From.Id;
             var restaurantDetails = await _botStateService.UserDetailsAccessor.GetAsync(stepContext.Context, () => new RestaurantDetails(), cancellationToken);
             var resturnonAPI = $"{APIBaseUrl}/api/Restaurant/GetRestaurantInfo/{restaurantDetails.BaId}";
-            var respon = await _restClientService.Get<RestaurantShortResponse>(resturnonAPI);
+            var respon = await _restClientService.Get<RestaurantShortResponse>(resturnonAPI, userId);
             restaurantDetails.StatusRestaurant = respon.IsStandby;
             await _botStateService.SaveChangesAsync(stepContext.Context);
 
@@ -66,6 +67,7 @@ namespace DemoEchoBot.Dialogs
 
         private async Task<DialogTurnResult> CheckstatusRestaurant(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
+            var userId = stepContext.Context.Activity.From.Id;
             var restaurantDetails = await _botStateService.UserDetailsAccessor.GetAsync(stepContext.Context, () => new RestaurantDetails(), cancellationToken);
             var data = stepContext.Context.Activity.Text;
             var message = "";
@@ -84,7 +86,7 @@ namespace DemoEchoBot.Dialogs
                         message = "เปิดร้านเรียบร้อยแล้ว";
                         var confirmMessage = MessageFactory.Text(message, message, InputHints.ExpectingInput);
                         var resturnonAPI = $"{APIBaseUrl}/api/Restaurant/RestaurantStandbyTurnOn/{restaurantDetails.RestaurantId}";
-                        await _restClientService.Post(resturnonAPI, string.Empty);
+                        await _restClientService.Post(resturnonAPI, string.Empty, userId);
                         restaurantDetails.StatusRestaurant = true;
                         await _botStateService.SaveChangesAsync(stepContext.Context);
                         return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions { Prompt = confirmMessage }, cancellationToken);

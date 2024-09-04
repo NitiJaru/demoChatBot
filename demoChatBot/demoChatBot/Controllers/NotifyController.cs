@@ -240,7 +240,7 @@ namespace Microsoft.BotBuilderSamples.Controllers
                 {
                     var restaurantDetails = await _botStateService.UserDetailsAccessor.GetAsync(turnContext, () => new RestaurantDetails(), cancellationToken);
                     var resturnonAPI = $"{APIBaseUrl}/api/Restaurant/GetRestaurantInfo/{resId}";
-                    var respon = await _restClientService.Get<RestaurantShortResponse>(resturnonAPI);
+                    var respon = await _restClientService.Get<RestaurantShortResponse>(resturnonAPI, botUserId);
                     restaurantDetails.RestaurantName = respon.Name;
                     restaurantDetails.IsLinkedAccount = true;
                     restaurantDetails.BaId = resId;
