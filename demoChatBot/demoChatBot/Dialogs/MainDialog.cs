@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.DataProtection.XmlEncryption;
 using Flurl.Http;
 using System.Net.Http;
 using MongoDB.Driver.Core.Configuration;
+using demoChatBot;
 
 namespace DemoEchoBot.Dialogs
 {
@@ -55,9 +56,7 @@ namespace DemoEchoBot.Dialogs
         private async Task<DialogTurnResult> IntroStepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
             var userId = stepContext.Context.Activity.From.Id;
-            //var userId = "U179c44c17b333868c6d7aab073e0f0fa";
             var restaurantDetails = await _botStateService.UserDetailsAccessor.GetAsync(stepContext.Context, () => new RestaurantDetails(), cancellationToken);
-
             if (restaurantDetails.IsLinkedAccount)
             {
                 if (_restaurantDetails is null)
@@ -75,7 +74,6 @@ namespace DemoEchoBot.Dialogs
             async Task TryGetUserDetail()
             {
                 var restaurantDetails = await _botStateService.UserDetailsAccessor.GetAsync(stepContext.Context, () => new RestaurantDetails(), cancellationToken);
-                //var userId = stepContext.Context.Activity.From.Id;
                 var resturnonAPI = $"{APIBaseUrl}/api/Restaurant/GetRestaurantInfoWithChatBotId";
                 var rspdata = await _restClientService.Get<RestaurantShortResponse>(resturnonAPI, userId);
                 if (rspdata is null) return;
@@ -85,14 +83,6 @@ namespace DemoEchoBot.Dialogs
                 restaurantDetails.RestaurantName = rspdata.Name;
                 restaurantDetails.BaId = rspdata.BusinessAccountId;
                 await _botStateService.SaveChangesAsync(stepContext.Context);
-                //if (stepContext.Context.Activity.Text.ToLower() == "reset" || stepContext.Context.Activity.Text is null)
-                //{
-                //    restaurantDetails.IsLinkedAccount = false;
-                //    await _botStateService.SaveChangesAsync(stepContext.Context);
-                //}
-                //else
-                //{
-                //}
             }
         }
 
@@ -103,129 +93,66 @@ namespace DemoEchoBot.Dialogs
             var attachments = new List<Attachment>();
             var reply = MessageFactory.Attachment(attachments);
             var data = stepContext.Context.Activity.Text;
-            if (restaurantDetails.IsLinkedAccount)
+            if (data?.ToLower() == "reset")
             {
-                switch (data.ToLower())
-                {
-                    case "เปิดร้าน":
-                        return await stepContext.BeginDialogAsync(nameof(OpenRestaurantDialog), new PaymentInfo { Operation = data }, cancellationToken);
-                    case "ปิดร้าน":
-                        return await stepContext.BeginDialogAsync(nameof(CloseRestaurantDialog), new PaymentInfo { Operation = data }, cancellationToken);
-                    case null:
-                        return await stepContext.EndDialogAsync(null, cancellationToken);
-                    case "reset":
-                        restaurantDetails = await _botStateService.UserDetailsAccessor.GetAsync(stepContext.Context, () => new RestaurantDetails(), cancellationToken);
-                        restaurantDetails.IsLinkedAccount = false;
-                        await _botStateService.SaveChangesAsync(stepContext.Context);
-                        var resetApi = $"{APIBaseUrl}/api/Restaurant/LinkedRemove/{userId}";
-                        await _restClientService.Post(resetApi, string.Empty, userId);
-                        // Restart the main dialog with a different message the second time around
-                        return await stepContext.ReplaceDialogAsync(InitialDialogId, "Reset BOT", cancellationToken);
-                    case "ติดต่อ":
-                        //messageText = $"Admin {_employeeDetails.DeliveryName} deilvery{Environment.NewLine}{_employeeDetails.PhoneNumber}";
-                        //promptMessage = MessageFactory.Text(messageText, messageText);
-                        //await stepContext.Context.SendActivityAsync(promptMessage, cancellationToken);
-                        await stepContext.Context.SendActivityAsync(MessageFactory.Text($"Admin DeliveryName deilvery{Environment.NewLine}  PhoneNumber"));
-                        return await stepContext.EndDialogAsync();
-
-                    //case "ออเดอร์":
-                    //    return await stepContext.BeginDialogAsync(nameof(OrderRestaurantDialog), new PaymentInfo { Operation = data }, cancellationToken);
-                    //case "อัพเดท":
-                    //    var heroCard = new HeroCard
-                    //    {
-                    //        Title = "มีการอัพเดทเมนู",
-                    //        Images = new List<CardImage> { new CardImage("https://failfast.blob.core.windows.net/upload/Delivery/update.png") },
-                    //        Buttons = new List<CardAction> { new CardAction(ActionTypes.OpenUrl, "ดูรายละเอียด", value: "http:www.google.com") }
-                    //    };
-                    //    attachments.Add(heroCard.ToAttachment());
-                    //    return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions { Prompt = (Activity)reply });
-                    //case "เมนูร้าน":
-                    //    var mainMenuApi = $"https://devster-delivery-test.onmana.space/apprestaurant/index.html#/menu-main";
-                    //    var mainMenuheroCard = new HeroCard
-                    //    {
-                    //        Title = "เมนูร้าน",
-                    //        Text = $"ดูผ่านจากลิงค์นี้ {mainMenuApi}",
-                    //        Buttons = new List<CardAction> { new CardAction(ActionTypes.OpenUrl, "เปิดลิงค์", value: mainMenuApi) }
-                    //    };
-                    //    reply.Attachments.Add(mainMenuheroCard.ToAttachment());
-                    //    return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions { Prompt = (Activity)reply });
-                    //case "เมนูอัพเดท":
-                    //    var menuUpdateApi = $"https://devster-delivery-test.onmana.space/apprestaurant/index.html#/menuupdate-main";
-                    //    var menuupdateheroCard = new HeroCard
-                    //    {
-                    //        Title = "เมนูอัพเดท",
-                    //        Text = $"ดูผ่านจากลิงค์นี้ {menuUpdateApi}",
-                    //        Buttons = new List<CardAction> { new CardAction(ActionTypes.OpenUrl, "เปิดลิงค์", value: menuUpdateApi) }
-                    //    };
-                    //    reply.Attachments.Add(menuupdateheroCard.ToAttachment());
-                    //    return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions { Prompt = (Activity)reply });
-                    //case "ออเดอร์วันนี้":
-                    //    var orderNowApi = $"https://devster-delivery-test.onmana.space/apprestaurant/index.html#/order-main";
-                    //    var orderNowheroCard = new HeroCard
-                    //    {
-                    //        Title = "ออเดอร์วันนี้",
-                    //        Text = $"ดูผ่านจากลิงค์นี้ {orderNowApi}",
-                    //        Buttons = new List<CardAction> { new CardAction(ActionTypes.OpenUrl, "เปิดลิงค์", value: orderNowApi) }
-                    //    };
-                    //    reply.Attachments.Add(orderNowheroCard.ToAttachment());
-                    //    return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions { Prompt = (Activity)reply });
-                    //case "ออเดอร์ย้อนหลัง":
-                    //    var orderHistoryApi = $"https://devster-delivery-test.onmana.space/apprestaurant/index.html#/history-main";
-                    //    var orderHistoryheroCard = new HeroCard
-                    //    {
-                    //        Title = "ประวัติออเดอร์ย้อนหลัง",
-                    //        Text = $"ดูผ่านจากลิงค์นี้ {orderHistoryApi}",
-                    //        Buttons = new List<CardAction> { new CardAction(ActionTypes.OpenUrl, "เปิดลิงค์", value: orderHistoryApi) }
-                    //    };
-                    //    reply.Attachments.Add(orderHistoryheroCard.ToAttachment());
-                    //    return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions { Prompt = (Activity)reply });
-                    //case "จัดการร้าน":
-                    //    var settingApi = $"https://devster-delivery-test.onmana.space/apprestaurant/index.html#/setting-main";
-                    //    var settingheroCard = new HeroCard
-                    //    {
-                    //        Title = "จัดการร้าน",
-                    //        Text = $"ดูผ่านจากลิงค์นี้ {settingApi}",
-                    //        Buttons = new List<CardAction> { new CardAction(ActionTypes.OpenUrl, "เปิดลิงค์", value: settingApi) }
-                    //    };
-                    //    reply.Attachments.Add(settingheroCard.ToAttachment());
-                    //    return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions { Prompt = (Activity)reply });
-                    //case "บริษัทดิลิเวอรี่":
-                    //    var contractApi = $"https://devster-delivery-test.onmana.space/apprestaurant/index.html#/contract-main";
-                    //    var contractheroCard = new HeroCard
-                    //    {
-                    //        Title = "บริษัทดิลิเวอรี่",
-                    //        Text = $"ดูผ่านจากลิงค์นี้ {contractApi}",
-                    //        Buttons = new List<CardAction> { new CardAction(ActionTypes.OpenUrl, "เปิดลิงค์", value: contractApi) }
-                    //    };
-                    //    reply.Attachments.Add(contractheroCard.ToAttachment());
-                    //    return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions { Prompt = (Activity)reply });
-                    default:
-                        if (restaurantDetails.StatusRestaurant)
-                        {
-                            await stepContext.Context.SendActivityAsync(MessageFactory.Text($"สถานะร้าน เปิด"));
-                            return await stepContext.EndDialogAsync(null, cancellationToken);
-                        }
-                        else
-                        {
-                            var messageText = $"สถานะร้าน ปิด";
-                            var promptMessage = MessageFactory.Text(messageText, messageText, InputHints.ExpectingInput);
-                            return await stepContext.PromptAsync(nameof(ChoicePrompt), new PromptOptions
-                            {
-                                Prompt = promptMessage,
-                                Choices = new[]
-                                {
-                                    new Choice { Value = "เปิดร้าน" }
-                                }
-                            }, cancellationToken);
-                        }
-                }
+                restaurantDetails = new RestaurantDetails() { BaId = null, IsLinkedAccount = false, RestaurantId = null, RestaurantName = null, StatusRestaurant = false };
+                await _botStateService.SaveChangesAsync(stepContext.Context);
+                var resetApi = $"{APIBaseUrl}/api/Restaurant/LinkedRemove/{userId}";
+                await _restClientService.Post(resetApi, string.Empty, userId);
+                stepContext.Context.Activity.Text = null;
+                return await stepContext.ReplaceDialogAsync(InitialDialogId, "Reset BOT", cancellationToken);
             }
             else
             {
-                var linkAccountDetails = new RestaurantDetails();
-                return await stepContext.BeginDialogAsync(nameof(LinkAccountDialog), linkAccountDetails, cancellationToken);
+
+                if (restaurantDetails.IsLinkedAccount)
+                {
+                    switch (data.ToLower())
+                    {
+                        case "เปิดร้าน":
+                            return await stepContext.BeginDialogAsync(nameof(OpenRestaurantDialog), new PaymentInfo { Operation = data }, cancellationToken);
+                        case "ปิดร้าน":
+                            return await stepContext.BeginDialogAsync(nameof(CloseRestaurantDialog), new PaymentInfo { Operation = data }, cancellationToken);
+                        case null:
+                            return await stepContext.EndDialogAsync(null, cancellationToken);
+                        case "ติดต่อ":
+                            await stepContext.Context.SendActivityAsync(MessageFactory.Text($"Admin DeliveryName deilvery{Environment.NewLine}  PhoneNumber"));
+                            return await stepContext.EndDialogAsync();
+                        default:
+                            if (restaurantDetails.StatusRestaurant)
+                            {
+                                await stepContext.Context.SendActivityAsync(MessageFactory.Text($"สถานะร้าน เปิด"));
+                                return await stepContext.EndDialogAsync(null, cancellationToken);
+                            }
+                            else
+                            {
+                                var messageText = $"สถานะร้าน ปิด";
+                                var promptMessage = MessageFactory.Text(messageText, messageText, InputHints.ExpectingInput);
+                                return await stepContext.PromptAsync(nameof(ChoicePrompt), new PromptOptions
+                                {
+                                    Prompt = promptMessage,
+                                    Choices = new[]
+                                    {
+                                    new Choice { Value = "เปิดร้าน" }
+                                }
+                                }, cancellationToken);
+                            }
+                    }
+                }
+                else if (!restaurantDetails.IsLinkedAccount && (data?.ToLower() == "เริ่มผูกบัญชีใหม่" || data?.ToLower() == null))
+                {
+                    var linkAccountDetails = new RestaurantDetails();
+                    return await stepContext.BeginDialogAsync(nameof(LinkAccountDialog), linkAccountDetails, cancellationToken);
+                }
+                else
+                {
+                    var messageText = "คุณยังไม่ได้ผูก line account กับ mana";
+                    var promptMessage = MessageFactory.Text(messageText, messageText);
+                    await stepContext.Context.SendActivityAsync(promptMessage, cancellationToken);
+                    var linkAccountDetails = new RestaurantDetails();
+                    return await stepContext.BeginDialogAsync(nameof(LinkAccountDialog), linkAccountDetails, cancellationToken);
+                }
             }
-            //return await stepContext.ContinueDialogAsync(cancellationToken);
 
         }
 

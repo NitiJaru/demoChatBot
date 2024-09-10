@@ -9,7 +9,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using demoChatBot.Models;
 using DemoEchoBot.Services;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Integration.AspNet.Core;
@@ -92,8 +91,8 @@ namespace Microsoft.BotBuilderSamples.Controllers
                 if (userDetails.RestaurantId != resId) return;
                 IMessageActivity messageActivity;
                 var resOrderApi = $"https://liff.line.me/2006157455-3dNXrwAO#order-main";
-                var button = new List<CardAction> { new CardAction(ActionTypes.OpenUrl, "เปิดลิงค์", value: resOrderApi) };
-                messageActivity = getHeroCard("ดูข้อมูลออเดอร์หรืออัพเดทสถานะออเดอร์", "", resOrderApi, null, button);
+                var button = new List<CardAction> { new CardAction(ActionTypes.OpenUrl, "เปิด", value: resOrderApi) };
+                messageActivity = getHeroCard("ดูข้อมูลออเดอร์หรืออัพเดทสถานะออเดอร์", "", "", null, button);
                 await turnContext.SendActivityAsync(messageActivity, cancellationToken);
             }
         }
@@ -113,9 +112,9 @@ namespace Microsoft.BotBuilderSamples.Controllers
                 if (userDetails.RestaurantId != resId) return;
                 IMessageActivity messageActivity;
                 var resOrderApi = $"https://liff.line.me/2006157455-3dNXrwAO#menuupdate-main";
-                var image = new CardImage("https://failfast.blob.core.windows.net/upload/Delivery/newupdate.png");
-                var button = new List<CardAction> { new CardAction(ActionTypes.OpenUrl, "เปิดลิงค์", value: resOrderApi) };
-                messageActivity = getHeroCard("มีเมนูอัพเดท", "", resOrderApi, image, button);
+                var image = new CardImage("");
+                var button = new List<CardAction> { new CardAction(ActionTypes.OpenUrl, "เปิด", value: resOrderApi) };
+                messageActivity = getHeroCard("ดูเมนูอัพเดท", "", "", null, button);
                 await turnContext.SendActivityAsync(messageActivity, cancellationToken);
             }
 
@@ -134,8 +133,7 @@ namespace Microsoft.BotBuilderSamples.Controllers
             {
                 var userDetails = await _botStateService.UserDetailsAccessor.GetAsync(turnContext, () => new RestaurantDetails(), cancellationToken);
                 if (userDetails.RestaurantId != resId) return;
-                await turnContext.SendActivityAsync("คำขอยกเลิกออเดอร์ได้รับการอนุมัติแล้ว");
-
+                await turnContext.SendActivityAsync("ออเดอร์ถูกยกเลิก");
             }
 
         }
@@ -173,7 +171,6 @@ namespace Microsoft.BotBuilderSamples.Controllers
                 if (userDetails.RestaurantId != resId) return;
                 var activity = Activity.CreateMessageActivity();
                 activity.Text = "สถานะร้าน ปิด";
-                //await turnContext.SendActivityAsync(activity);
                 var choices = new List<string> { "เปิดร้าน" };
                 var reply = MessageFactory.SuggestedActions(choices, activity.Text, null, InputHints.ExpectingInput);
                 await turnContext.SendActivityAsync(reply);
@@ -214,7 +211,6 @@ namespace Microsoft.BotBuilderSamples.Controllers
                 if (userDetails.RestaurantId != resId) return;
                 var activity = Activity.CreateMessageActivity();
                 activity.Text = "สถานะร้านถูกปิดจากแอดมิน";
-                //await turnContext.SendActivityAsync(activity);
                 var choices = new List<string> { "เปิดร้าน" };
                 var reply = MessageFactory.SuggestedActions(choices, activity.Text, null, InputHints.ExpectingInput);
                 userDetails.StatusRestaurant = false;
@@ -254,7 +250,7 @@ namespace Microsoft.BotBuilderSamples.Controllers
                 else
                 {
                     IMessageActivity messageActivity;
-                    var button = new List<CardAction> { new(ActionTypes.PostBack, title: "เริ่มผูกบัญชีใหม่", value: false) };
+                    var button = new List<CardAction> { new(ActionTypes.ImBack, title: "เริ่มผูกบัญชีใหม่", value: "เริ่มผูกบัญชีใหม่") };
                     messageActivity = getHeroCard("คุณถูกปฎิเสธการผูก line account กับ mana", "", "", null, button);
                     await turnContext.SendActivityAsync(messageActivity, cancellationToken);
                 }
@@ -267,7 +263,7 @@ namespace Microsoft.BotBuilderSamples.Controllers
                 var card = new HeroCard
                 {
                     Title = title,
-                    Subtitle = $"ดูผ่านจากลิงค์นี้ {url}",
+                    Subtitle = $"{url}",
                     Images = new List<CardImage> { imagecard },
                     Buttons = buttondetail
                 };
@@ -279,7 +275,7 @@ namespace Microsoft.BotBuilderSamples.Controllers
                 var card = new HeroCard
                 {
                     Title = title,
-                    Subtitle = $"ดูผ่านจากลิงค์นี้ {url}",
+                    Subtitle = $"{url}",
                     Buttons = buttondetail
                 };
                 var attachment = card.ToAttachment();
