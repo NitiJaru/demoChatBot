@@ -1,5 +1,5 @@
 ﻿using demoChatBot.Models;
-using DemoEchoBot.Services;
+using demoChatBot.Services;
 using Flurl.Util;
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Dialogs;
@@ -14,7 +14,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace DemoEchoBot.Dialogs
+namespace demoChatBot.Dialogs
 {
     public class OpenRestaurantDialog : ComponentDialog
     {

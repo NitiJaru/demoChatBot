@@ -9,14 +9,14 @@ using System;
 using System.Linq;
 using demoChatBot.Models;
 using Newtonsoft.Json.Linq;
-using DemoEchoBot.Services;
+using demoChatBot.Services;
 using Microsoft.AspNetCore.DataProtection.XmlEncryption;
 using Flurl.Http;
 using System.Net.Http;
 using MongoDB.Driver.Core.Configuration;
 using demoChatBot;
 
-namespace DemoEchoBot.Dialogs
+namespace demoChatBot.Dialogs
 {
     public class MainDialog : ComponentDialog
     {
@@ -95,7 +95,8 @@ namespace DemoEchoBot.Dialogs
             var data = stepContext.Context.Activity.Text;
             if (data?.ToLower() == "reset")
             {
-                restaurantDetails = new RestaurantDetails() { BaId = null, IsLinkedAccount = false, RestaurantId = null, RestaurantName = null, StatusRestaurant = false };
+                restaurantDetails.IsLinkedAccount = false;
+                restaurantDetails.RestaurantId = null;
                 await _botStateService.SaveChangesAsync(stepContext.Context);
                 var resetApi = $"{APIBaseUrl}/api/Restaurant/LinkedRemove/{userId}";
                 await _restClientService.Post(resetApi, string.Empty, userId);
@@ -104,10 +105,9 @@ namespace DemoEchoBot.Dialogs
             }
             else
             {
-
                 if (restaurantDetails.IsLinkedAccount)
                 {
-                    switch (data.ToLower())
+                    switch (data?.ToLower())
                     {
                         case "เปิดร้าน":
                             return await stepContext.BeginDialogAsync(nameof(OpenRestaurantDialog), new PaymentInfo { Operation = data }, cancellationToken);

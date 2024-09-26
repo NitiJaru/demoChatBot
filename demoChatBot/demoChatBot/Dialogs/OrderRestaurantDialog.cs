@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 using static System.Net.Mime.MediaTypeNames;
 using Attachment = Microsoft.Bot.Schema.Attachment;
 
-namespace DemoEchoBot.Dialogs
+namespace demoChatBot.Dialogs
 {
     public class OrderRestaurantDialog : ComponentDialog
     {

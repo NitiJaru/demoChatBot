@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 using System.Threading;
 using System;
 using demoChatBot.Models;
-using DemoEchoBot.Services;
+using demoChatBot.Services;
 
-namespace DemoEchoBot.Dialogs
+namespace demoChatBot.Dialogs
 {
     public class LinkAccountDialog : ComponentDialog
     {

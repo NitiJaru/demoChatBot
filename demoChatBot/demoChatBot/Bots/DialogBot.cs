@@ -3,31 +3,34 @@
 //
 // Generated with Bot Builder V4 SDK Template for Visual Studio EchoBot v4.18.1
 
+using demoChatBot.Services;
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Schema;
-using Microsoft.Bot.Schema.Teams;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace DemoEchoBot.Bots
+namespace demoChatBot.Bots
 {
     public class DialogBot<T> : ActivityHandler
         where T : Dialog
     {
         protected readonly Dialog Dialog;
         protected readonly BotState ConversationState;
+        private readonly IConversationReferenceRepository ReferenceRepository;
         protected readonly BotState UserState;
         private readonly ConcurrentDictionary<string, ConversationReference> ConversationReferences;
 
         public DialogBot(ConversationState conversationState
             , ConcurrentDictionary<string, ConversationReference> conversationReferences
+                        , IConversationReferenceRepository referenceRepository
             , UserState userState
             , T dialog)
         {
             ConversationState = conversationState;
+            ReferenceRepository = referenceRepository;
             ConversationReferences = conversationReferences;
             Dialog = dialog;
             UserState = userState;
@@ -64,7 +67,8 @@ namespace DemoEchoBot.Bots
         private void AddConversationReference(Activity activity)
         {
             var conversationReference = activity.GetConversationReference();
-            ConversationReferences.AddOrUpdate(conversationReference.User.Id, conversationReference, (key, newValue) => conversationReference);
+            ReferenceRepository.AddOrUpdateConversationReferenceAsync(conversationReference.User.Id, conversationReference);
+            //ConversationReferences.AddOrUpdate(conversationReference.User.Id, conversationReference, (key, newValue) => conversationReference);
         }
 
         protected override Task OnConversationUpdateActivityAsync(ITurnContext<IConversationUpdateActivity> turnContext, CancellationToken cancellationToken)

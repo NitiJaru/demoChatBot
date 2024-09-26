@@ -4,7 +4,7 @@ using System.Net.Http.Json;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DemoEchoBot.Services
+namespace demoChatBot.Services
 {
     public interface IRestClientService
     {

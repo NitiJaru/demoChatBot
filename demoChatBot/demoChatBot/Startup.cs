@@ -3,16 +3,15 @@
 //
 // Generated with Bot Builder V4 SDK Template for Visual Studio EmptyBot v4.18.1
 
-using DemoEchoBot.Bots;
-using DemoEchoBot.Dialogs;
-using DemoEchoBot.Services;
+using demoChatBot.Bots;
+using demoChatBot.Dialogs;
+using demoChatBot.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Integration.AspNet.Core;
 using Microsoft.Bot.Connector.Authentication;
 using Microsoft.Bot.Schema;
-using Microsoft.BotBuilderSamples;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -58,11 +57,14 @@ namespace demoChatBot
             services.AddSingleton<UserState>();
 
             //services.AddSingleton<ProactiveBot>();
-            services.AddSingleton<ConcurrentDictionary<string, ConversationReference>>();
 
             services.AddTransient<IBot, DialogBot<MainDialog>>();
             services.AddTransient<IRestClientService, RestClientService>();
             services.AddTransient<IBotStateService, BotStateService>();
+            services.AddTransient<IConversationReferenceRepository, ConversationReferenceRepository>();
+
+            // Get DatabaseSettings from jsonsettings
+            services.AddTransient(it => Configuration.GetSection(typeof(DbConfig).Name).Get<DbConfig>());
 
         }
 

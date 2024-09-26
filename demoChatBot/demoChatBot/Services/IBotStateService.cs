@@ -3,7 +3,7 @@ using Microsoft.Bot.Builder;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace DemoEchoBot.Services
+namespace demoChatBot.Services
 {
     public interface IBotStateService
     {

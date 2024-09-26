@@ -8,7 +8,7 @@ using Microsoft.Bot.Builder.Dialogs.Choices;
 using System;
 using demoChatBot.Models;
 
-namespace DemoEchoBot.Dialogs
+namespace demoChatBot.Dialogs
 {
     public class FoodDialog : ComponentDialog
     {
