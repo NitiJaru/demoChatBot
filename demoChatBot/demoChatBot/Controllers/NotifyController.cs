@@ -29,11 +29,12 @@ namespace Microsoft.BotBuilderSamples.Controllers
 
         //private readonly ConcurrentDictionary<string, ConversationReference> _conversationReferences;
 
-        public NotifyController(IBotStateService botStateService, IBotFrameworkHttpAdapter adapter, IConfiguration configuration, IRestClientService restClientService)
+        public NotifyController(IBotStateService botStateService, IBotFrameworkHttpAdapter adapter, IConfiguration configuration, IRestClientService restClientService, IConversationReferenceRepository referenceRepository)
         {
             _botStateService = botStateService;
             _adapter = adapter;
             _restClientService = restClientService;
+            _referenceRepository = referenceRepository;
             _appId = configuration["MicrosoftAppId"] ?? string.Empty;
         }
 
@@ -102,7 +103,7 @@ namespace Microsoft.BotBuilderSamples.Controllers
 
         }
 
-         [HttpGet("{botUserId}")]
+        [HttpGet("{botUserId}")]
         public async Task<IActionResult> CloseRestaurant(string botUserId)
         {
             var conversationReference = await _referenceRepository.GetConversationReferenceAsync(botUserId);
