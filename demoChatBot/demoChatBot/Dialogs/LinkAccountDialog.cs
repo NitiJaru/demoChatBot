@@ -13,7 +13,7 @@ namespace demoChatBot.Dialogs
 {
     public class LinkAccountDialog : ComponentDialog
     {
-        private readonly string APIBaseUrl = "https://delivery-3rd-test-api.azurewebsites.net";
+        private readonly string APIBaseUrl = "https://delivery-3rd-th-api.azurewebsites.net";
         private readonly IRestClientService _restClientService;
         private readonly IBotStateService _botStateService;
 

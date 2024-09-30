@@ -50,10 +50,10 @@ namespace Microsoft.BotBuilderSamples.Controllers
             {
                 var userDetails = await _botStateService.UserDetailsAccessor.GetAsync(turnContext, () => new RestaurantDetails(), cancellationToken);
                 IMessageActivity messageActivity;
-                IMessageActivity messageActivity2;
-                messageActivity2 = getHeroCard($"botUserId:{botUserId}{Environment.NewLine}userDetails.RestaurantId: {userDetails.RestaurantId}",
-             "", "", null, null);
-                await turnContext.SendActivityAsync(messageActivity2, cancellationToken);
+             //   IMessageActivity messageActivity2;
+             //   messageActivity2 = getHeroCard($"botUserId:{botUserId}{Environment.NewLine}userDetails.RestaurantId: {userDetails.RestaurantId}",
+             //"", "", null, null);
+                //await turnContext.SendActivityAsync(messageActivity2, cancellationToken);
                 var resOrderApi = $"https://liff.line.me/2006157455-3dNXrwAO#order-main";
                 var button = new List<CardAction> { new CardAction(ActionTypes.OpenUrl, "เปิด", value: resOrderApi) };
                 messageActivity = getHeroCard("ดูข้อมูลออเดอร์หรืออัพเดทสถานะออเดอร์", "", "", null, button);
@@ -72,10 +72,10 @@ namespace Microsoft.BotBuilderSamples.Controllers
             {
                 var userDetails = await _botStateService.UserDetailsAccessor.GetAsync(turnContext, () => new RestaurantDetails(), cancellationToken);
                 IMessageActivity messageActivity;
-                IMessageActivity messageActivity2;
-                messageActivity2 = getHeroCard($"botUserId:{botUserId}{Environment.NewLine}userDetails.RestaurantId: {userDetails.RestaurantId}",
-             "", "", null, null);
-                await turnContext.SendActivityAsync(messageActivity2, cancellationToken);
+             //   IMessageActivity messageActivity2;
+             //   messageActivity2 = getHeroCard($"botUserId:{botUserId}{Environment.NewLine}userDetails.RestaurantId: {userDetails.RestaurantId}",
+             //"", "", null, null);
+                //await turnContext.SendActivityAsync(messageActivity2, cancellationToken);
                 var resOrderApi = $"https://liff.line.me/2006157455-3dNXrwAO#menuupdate-main";
                 var image = new CardImage("");
                 var button = new List<CardAction> { new CardAction(ActionTypes.OpenUrl, "เปิด", value: resOrderApi) };
@@ -95,9 +95,9 @@ namespace Microsoft.BotBuilderSamples.Controllers
             async Task BotCallback(ITurnContext turnContext, CancellationToken cancellationToken)
             {
                 var userDetails = await _botStateService.UserDetailsAccessor.GetAsync(turnContext, () => new RestaurantDetails(), cancellationToken);
-                IMessageActivity messageActivity2;
-                messageActivity2 = getHeroCard($"botUserId:{botUserId}", "", $"userDetails.RestaurantId: {userDetails.RestaurantId}", null, null);
-                await turnContext.SendActivityAsync(messageActivity2, cancellationToken);
+                //IMessageActivity messageActivity2;
+                //messageActivity2 = getHeroCard($"botUserId:{botUserId}", "", $"userDetails.RestaurantId: {userDetails.RestaurantId}", null, null);
+                //await turnContext.SendActivityAsync(messageActivity2, cancellationToken);
                 await turnContext.SendActivityAsync("ออเดอร์ถูกยกเลิก");
             }
 
@@ -131,10 +131,10 @@ namespace Microsoft.BotBuilderSamples.Controllers
             async Task BotCallback(ITurnContext turnContext, CancellationToken cancellationToken)
             {
                 var userDetails = await _botStateService.UserDetailsAccessor.GetAsync(turnContext, () => new RestaurantDetails(), cancellationToken);
-                IMessageActivity messageActivity2;
-                messageActivity2 = getHeroCard($"botUserId:{botUserId}{Environment.NewLine}userDetails.RestaurantId: {userDetails.RestaurantId}",
-             "", "", null, null);
-                await turnContext.SendActivityAsync(messageActivity2, cancellationToken);
+             //   IMessageActivity messageActivity2;
+             //   messageActivity2 = getHeroCard($"botUserId:{botUserId}{Environment.NewLine}userDetails.RestaurantId: {userDetails.RestaurantId}",
+             //"", "", null, null);
+                //await turnContext.SendActivityAsync(messageActivity2, cancellationToken);
                 userDetails.StatusRestaurant = true;
                 await _botStateService.SaveChangesAsync(turnContext);
                 await turnContext.SendActivityAsync("สถานะร้านถูกเปิดจากแอดมิน");
@@ -152,10 +152,10 @@ namespace Microsoft.BotBuilderSamples.Controllers
             async Task BotCallback(ITurnContext turnContext, CancellationToken cancellationToken)
             {
                 var userDetails = await _botStateService.UserDetailsAccessor.GetAsync(turnContext, () => new RestaurantDetails(), cancellationToken);
-                IMessageActivity messageActivity2;
-                messageActivity2 = getHeroCard($"botUserId:{botUserId}{Environment.NewLine}userDetails.RestaurantId: {userDetails.RestaurantId}",
-             "", "", null, null);
-                await turnContext.SendActivityAsync(messageActivity2, cancellationToken);
+             //   IMessageActivity messageActivity2;
+             //   messageActivity2 = getHeroCard($"botUserId:{botUserId}{Environment.NewLine}userDetails.RestaurantId: {userDetails.RestaurantId}",
+             //"", "", null, null);
+                //await turnContext.SendActivityAsync(messageActivity2, cancellationToken);
                 var activity = Activity.CreateMessageActivity();
                 activity.Text = "สถานะร้านถูกปิดจากแอดมิน";
                 var choices = new List<string> { "เปิดร้าน" };
@@ -178,8 +178,8 @@ namespace Microsoft.BotBuilderSamples.Controllers
                 var activity = Activity.CreateMessageActivity();
                 var restaurantDetails = await _botStateService.UserDetailsAccessor.GetAsync(turnContext, () => new RestaurantDetails(), cancellationToken);
                 IMessageActivity messageActivity;
-                messageActivity = getHeroCard($"ResId:{resId}{Environment.NewLine}botUserId: {botUserId}{Environment.NewLine}isApprove: {isApprove}", "", "", null, null);
-                await turnContext.SendActivityAsync(messageActivity, cancellationToken);
+                //messageActivity = getHeroCard($"ResId:{resId}{Environment.NewLine}botUserId: {botUserId}{Environment.NewLine}isApprove: {isApprove}", "", "", null, null);
+                //await turnContext.SendActivityAsync(messageActivity, cancellationToken);
                 if (turnContext.Activity.From.Id != botUserId) return;
                 if (isApprove)
                 {
