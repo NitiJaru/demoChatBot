@@ -20,7 +20,7 @@ namespace demoChatBot.Dialogs
 {
     public class MainDialog : ComponentDialog
     {
-        private string APIBaseUrl = "https://delivery-3rd-test-api.azurewebsites.net";
+        private string APIBaseUrl = "https://delivery-3rd-th-api.azurewebsites.net";
         private RestaurantShortResponse _restaurantDetails;
 
         private readonly IRestClientService _restClientService;

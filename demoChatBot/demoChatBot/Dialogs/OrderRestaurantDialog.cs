@@ -42,7 +42,7 @@ namespace demoChatBot.Dialogs
             var data = (PaymentInfo)stepContext.Options;
             var attachments = new List<Attachment>();
             var reply = MessageFactory.Attachment(attachments);
-            var resOrderApi = $"https://devster-delivery-test.onmana.space/apprestaurant/index.html#/order-main";
+            var resOrderApi = $"https://devster-delivery.onmana.app/apprestaurant/index.html#/order-main";
             var heroCard = new HeroCard
             {
                 Title = "ดูข้อมูลออเดอร์หรืออัพเดทสถานะออเดอร์",

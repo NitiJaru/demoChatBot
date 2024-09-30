@@ -11,7 +11,7 @@ namespace demoChatBot.Dialogs
 {
     public class CloseRestaurantDialog : ComponentDialog
     {
-        private readonly string APIBaseUrl = "https://delivery-3rd-test-api.azurewebsites.net";
+        private readonly string APIBaseUrl = "https://delivery-3rd-th-api.azurewebsites.net";
         private RestaurantShortResponse _restaurantDetail;
         private readonly IBotStateService _botStateService;
         private readonly IRestClientService _restClientService;
