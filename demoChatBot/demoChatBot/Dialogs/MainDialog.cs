@@ -21,7 +21,6 @@ namespace demoChatBot.Dialogs
     public class MainDialog : ComponentDialog
     {
         private string APIBaseUrl = "https://delivery-3rd-th-api.azurewebsites.net";
-        private RestaurantShortResponse _restaurantDetails;
 
         private readonly IRestClientService _restClientService;
         private readonly IBotStateService _botStateService;
@@ -59,11 +58,6 @@ namespace demoChatBot.Dialogs
             var restaurantDetails = await _botStateService.UserDetailsAccessor.GetAsync(stepContext.Context, () => new RestaurantDetails(), cancellationToken);
             if (restaurantDetails.IsLinkedAccount)
             {
-                if (_restaurantDetails is null)
-                {
-                    var resturnonAPI = $"{APIBaseUrl}/api/Restaurant/GetRestaurantInfo/{restaurantDetails.BaId}";
-                    _restaurantDetails = await _restClientService.Get<RestaurantShortResponse>(resturnonAPI, userId);
-                }
                 return await stepContext.NextAsync(null, cancellationToken);
             }
             else
