@@ -20,8 +20,6 @@ namespace demoChatBot.Dialogs
 {
     public class MainDialog : ComponentDialog
     {
-        private string APIBaseUrl = "https://delivery-3rd-th-api.azurewebsites.net";
-
         private readonly IRestClientService _restClientService;
         private readonly IBotStateService _botStateService;
         private readonly ConnectionSetting _connectionSetting;
@@ -72,7 +70,7 @@ namespace demoChatBot.Dialogs
             async Task TryGetUserDetail()
             {
                 var restaurantDetails = await _botStateService.UserDetailsAccessor.GetAsync(stepContext.Context, () => new RestaurantDetails(), cancellationToken);
-                var resturnonAPI = $"{APIBaseUrl}/api/Restaurant/GetRestaurantInfoWithChatBotId";
+                var resturnonAPI = $"{_connectionSetting.DeliveryAPIBaseUrl}/api/Restaurant/GetRestaurantInfoWithChatBotId";
                 var rspdata = await _restClientService.Get<RestaurantShortResponse>(resturnonAPI, userId);
                 if (rspdata is null) return;
                 restaurantDetails.IsLinkedAccount = true;
@@ -96,7 +94,7 @@ namespace demoChatBot.Dialogs
                 restaurantDetails.IsLinkedAccount = false;
                 restaurantDetails.RestaurantId = null;
                 await _botStateService.SaveChangesAsync(stepContext.Context);
-                var resetApi = $"{APIBaseUrl}/api/Restaurant/LinkedRemove/{userId}";
+                var resetApi = $"{_connectionSetting.DeliveryAPIBaseUrl}/api/Restaurant/LinkedRemove/{userId}";
                 await _restClientService.Post(resetApi, string.Empty, userId);
                 stepContext.Context.Activity.Text = null;
                 return await stepContext.ReplaceDialogAsync(InitialDialogId, "Reset BOT", cancellationToken);

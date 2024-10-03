@@ -11,11 +11,12 @@ namespace demoChatBot.Dialogs
 {
     public class CloseRestaurantDialog : ComponentDialog
     {
-        private readonly string APIBaseUrl = "https://delivery-3rd-th-api.azurewebsites.net";
         private RestaurantShortResponse _restaurantDetail;
         private readonly IBotStateService _botStateService;
         private readonly IRestClientService _restClientService;
-        public CloseRestaurantDialog(IBotStateService botStateService, IRestClientService restClientService) : base(nameof(CloseRestaurantDialog))
+        private readonly ConnectionSetting _connectionSetting;
+
+        public CloseRestaurantDialog(IBotStateService botStateService, IRestClientService restClientService, ConnectionSetting connectionSetting) : base(nameof(CloseRestaurantDialog))
         {
             AddDialog(new TextPrompt(nameof(TextPrompt)));
             AddDialog(new ChoicePrompt(nameof(ChoicePrompt)));
@@ -33,13 +34,14 @@ namespace demoChatBot.Dialogs
             InitialDialogId = nameof(WaterfallDialog);
             _restClientService = restClientService;
             _botStateService = botStateService;
+            _connectionSetting = connectionSetting;
         }
 
         private async Task<DialogTurnResult> CloseRestaurant(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
             var userId = stepContext.Context.Activity.From.Id;
             var restaurantDetails = await _botStateService.UserDetailsAccessor.GetAsync(stepContext.Context, () => new RestaurantDetails(), cancellationToken);
-            var resturnonAPI = $"{APIBaseUrl}/api/Restaurant/GetRestaurantInfo/{restaurantDetails.BaId}";
+            var resturnonAPI = $"{_connectionSetting.DeliveryAPIBaseUrl}/api/Restaurant/GetRestaurantInfo/{restaurantDetails.BaId}";
             var respon = await _restClientService.Get<RestaurantShortResponse>(resturnonAPI, userId);
             restaurantDetails.StatusRestaurant = respon.IsStandby;
             await _botStateService.SaveChangesAsync(stepContext.Context);
@@ -79,7 +81,7 @@ namespace demoChatBot.Dialogs
                     case "ยืนยันการปิดร้าน":
                         message = "ปิดร้านเรียบร้อยแล้ว";
                         var confirmMessage = MessageFactory.Text(message, message, InputHints.ExpectingInput);
-                        var resturnonAPI = $"{APIBaseUrl}/api/Restaurant/RestaurantStandbyTurnOff/{restaurantDetails.RestaurantId}/?permanently=true";
+                        var resturnonAPI = $"{_connectionSetting.DeliveryAPIBaseUrl}/api/Restaurant/RestaurantStandbyTurnOff/{restaurantDetails.RestaurantId}/?permanently=true";
                         await _restClientService.Post(resturnonAPI, string.Empty, userId);
                         restaurantDetails.StatusRestaurant = false;
                         await _botStateService.SaveChangesAsync(stepContext.Context);

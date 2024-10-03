@@ -18,13 +18,13 @@ namespace demoChatBot.Dialogs
 {
     public class OpenRestaurantDialog : ComponentDialog
     {
-        private readonly string APIBaseUrl = "https://delivery-3rd-th-api.azurewebsites.net";
         private readonly IBotStateService _botStateService;
         private readonly IRestClientService _restClientService;
         private RestaurantShortResponse _restaurantDetail;
+        private readonly ConnectionSetting _connectionSetting;
 
 
-        public OpenRestaurantDialog(IBotStateService botStateService, IRestClientService restClientService) : base(nameof(OpenRestaurantDialog))
+        public OpenRestaurantDialog(IBotStateService botStateService, IRestClientService restClientService, ConnectionSetting connectionSetting) : base(nameof(OpenRestaurantDialog))
         {
 
             AddDialog(new TextPrompt(nameof(TextPrompt)));
@@ -43,13 +43,14 @@ namespace demoChatBot.Dialogs
             InitialDialogId = nameof(WaterfallDialog);
             _restClientService = restClientService;
             _botStateService = botStateService;
+            _connectionSetting = connectionSetting;
         }
 
         private async Task<DialogTurnResult> OpenRestaurant(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
             var userId = stepContext.Context.Activity.From.Id;
             var restaurantDetails = await _botStateService.UserDetailsAccessor.GetAsync(stepContext.Context, () => new RestaurantDetails(), cancellationToken);
-            var resturnonAPI = $"{APIBaseUrl}/api/Restaurant/GetRestaurantInfo/{restaurantDetails.BaId}";
+            var resturnonAPI = $"{_connectionSetting.DeliveryAPIBaseUrl}/api/Restaurant/GetRestaurantInfo/{restaurantDetails.BaId}";
             var respon = await _restClientService.Get<RestaurantShortResponse>(resturnonAPI, userId);
             restaurantDetails.StatusRestaurant = respon.IsStandby;
             await _botStateService.SaveChangesAsync(stepContext.Context);
@@ -85,7 +86,7 @@ namespace demoChatBot.Dialogs
                     case "ยืนยัน":
                         message = "เปิดร้านเรียบร้อยแล้ว";
                         var confirmMessage = MessageFactory.Text(message, message, InputHints.ExpectingInput);
-                        var resturnonAPI = $"{APIBaseUrl}/api/Restaurant/RestaurantStandbyTurnOn/{restaurantDetails.RestaurantId}";
+                        var resturnonAPI = $"{_connectionSetting.DeliveryAPIBaseUrl}/api/Restaurant/RestaurantStandbyTurnOn/{restaurantDetails.RestaurantId}";
                         await _restClientService.Post(resturnonAPI, string.Empty, userId);
                         restaurantDetails.StatusRestaurant = true;
                         await _botStateService.SaveChangesAsync(stepContext.Context);

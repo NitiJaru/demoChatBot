@@ -13,11 +13,11 @@ namespace demoChatBot.Dialogs
 {
     public class LinkAccountDialog : ComponentDialog
     {
-        private readonly string APIBaseUrl = "https://delivery-3rd-th-api.azurewebsites.net";
         private readonly IRestClientService _restClientService;
         private readonly IBotStateService _botStateService;
+        private readonly ConnectionSetting _connectionSetting;
 
-        public LinkAccountDialog(IBotStateService botStateService, IRestClientService restClientService)
+        public LinkAccountDialog(IBotStateService botStateService, IRestClientService restClientService, ConnectionSetting connectionSetting)
             : base(nameof(LinkAccountDialog))
         {
             AddDialog(new TextPrompt(nameof(TextPrompt)));
@@ -33,8 +33,7 @@ namespace demoChatBot.Dialogs
             InitialDialogId = nameof(WaterfallDialog);
             _restClientService = restClientService;
             _botStateService = botStateService;
-
-
+            _connectionSetting = connectionSetting;
         }
 
         private async Task<DialogTurnResult> LinkingStepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
@@ -42,7 +41,7 @@ namespace demoChatBot.Dialogs
 
             var userId = stepContext.Context.Activity.From.Id;
             var userName = stepContext.Context.Activity.From.Name;
-            var sessionRequest = $"{APIBaseUrl}/api/Restaurant/LinkRequest/line/{userId}/{userName}";
+            var sessionRequest = $"{_connectionSetting.DeliveryAPIBaseUrl}/api/Restaurant/LinkRequest/line/{userId}/{userName}";
             var session = await _restClientService.Get<Session>(sessionRequest);
 
             var reply = MessageFactory.Attachment(new Attachment

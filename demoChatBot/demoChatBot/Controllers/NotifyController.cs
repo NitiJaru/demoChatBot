@@ -20,7 +20,6 @@ namespace Microsoft.BotBuilderSamples.Controllers
     [ApiController]
     public class NotifyController : ControllerBase
     {
-        private readonly string APIBaseUrl = "https://delivery-3rd-th-api.azurewebsites.net";
         private readonly IBotStateService _botStateService;
         private readonly IRestClientService _restClientService;
         private readonly IBotFrameworkHttpAdapter _adapter;
