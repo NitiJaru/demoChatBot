@@ -56,8 +56,6 @@ namespace demoChatBot.Dialogs
         {
             var userId = stepContext.Context.Activity.From.Id;
             var restaurantDetails = await _botStateService.UserDetailsAccessor.GetAsync(stepContext.Context, () => new RestaurantDetails(), cancellationToken);
-            await stepContext.Context.SendActivityAsync(MessageFactory.Text($"APIDelivery: {_connectionSetting.DeliveryAPIBaseUrl}"));
-
             if (restaurantDetails.IsLinkedAccount)
             {
                 return await stepContext.NextAsync(null, cancellationToken);
