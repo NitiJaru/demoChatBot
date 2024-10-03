@@ -24,13 +24,13 @@ namespace Microsoft.BotBuilderSamples.Controllers
         private readonly IRestClientService _restClientService;
         private readonly IBotFrameworkHttpAdapter _adapter;
         private readonly string _appId;
-        private readonly ConnectionSetting _connectionSetting;
+        private readonly ConnectionSettings _connectionSetting;
 
         private readonly IConversationReferenceRepository _referenceRepository;
 
         //private readonly ConcurrentDictionary<string, ConversationReference> _conversationReferences;
 
-        public NotifyController(IBotStateService botStateService, IBotFrameworkHttpAdapter adapter, IConfiguration configuration, IRestClientService restClientService, IConversationReferenceRepository referenceRepository, ConnectionSetting connectionSetting)
+        public NotifyController(IBotStateService botStateService, IBotFrameworkHttpAdapter adapter, IConfiguration configuration, IRestClientService restClientService, IConversationReferenceRepository referenceRepository, ConnectionSettings connectionSetting)
         {
             _botStateService = botStateService;
             _adapter = adapter;
@@ -56,7 +56,7 @@ namespace Microsoft.BotBuilderSamples.Controllers
                 //   messageActivity2 = getHeroCard($"botUserId:{botUserId}{Environment.NewLine}userDetails.RestaurantId: {userDetails.RestaurantId}",
                 //"", "", null, null);
                 //await turnContext.SendActivityAsync(messageActivity2, cancellationToken);
-                var resOrderApi = $"https://liff.line.me/2006157455-3dNXrwAO#order-main";
+                var resOrderApi = $"{_connectionSetting.LineRestaurantOrderMain}";
                 var button = new List<CardAction> { new CardAction(ActionTypes.OpenUrl, "เปิด", value: resOrderApi) };
                 messageActivity = getHeroCard("ดูข้อมูลออเดอร์หรืออัพเดทสถานะออเดอร์", "", "", null, button);
                 await turnContext.SendActivityAsync(messageActivity, cancellationToken);
@@ -78,7 +78,7 @@ namespace Microsoft.BotBuilderSamples.Controllers
                 //   messageActivity2 = getHeroCard($"botUserId:{botUserId}{Environment.NewLine}userDetails.RestaurantId: {userDetails.RestaurantId}",
                 //"", "", null, null);
                 //await turnContext.SendActivityAsync(messageActivity2, cancellationToken);
-                var resOrderApi = $"https://liff.line.me/2006157455-3dNXrwAO#menuupdate-main";
+                var resOrderApi = $"{_connectionSetting.LineRestaurantMenuUpdate}";
                 var image = new CardImage("");
                 var button = new List<CardAction> { new CardAction(ActionTypes.OpenUrl, "เปิด", value: resOrderApi) };
                 messageActivity = getHeroCard("ดูเมนูอัพเดท", "", "", null, button);

@@ -65,7 +65,7 @@ namespace demoChatBot
 
             // Get DatabaseSettings from jsonsettings
             services.AddTransient(it => Configuration.GetSection(typeof(DbConfig).Name).Get<DbConfig>());
-            services.AddTransient(it => Configuration.GetSection(typeof(ConnectionSetting).Name).Get<ConnectionSetting>());
+            services.AddTransient(it => Configuration.GetSection(typeof(ConnectionSettings).Name).Get<ConnectionSettings>());
 
         }
 

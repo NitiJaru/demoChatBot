@@ -14,9 +14,9 @@ namespace demoChatBot.Dialogs
         private RestaurantShortResponse _restaurantDetail;
         private readonly IBotStateService _botStateService;
         private readonly IRestClientService _restClientService;
-        private readonly ConnectionSetting _connectionSetting;
+        private readonly ConnectionSettings _connectionSetting;
 
-        public CloseRestaurantDialog(IBotStateService botStateService, IRestClientService restClientService, ConnectionSetting connectionSetting) : base(nameof(CloseRestaurantDialog))
+        public CloseRestaurantDialog(IBotStateService botStateService, IRestClientService restClientService, ConnectionSettings connectionSetting) : base(nameof(CloseRestaurantDialog))
         {
             AddDialog(new TextPrompt(nameof(TextPrompt)));
             AddDialog(new ChoicePrompt(nameof(ChoicePrompt)));

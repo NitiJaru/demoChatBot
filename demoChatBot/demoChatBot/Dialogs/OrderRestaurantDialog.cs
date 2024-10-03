@@ -18,8 +18,10 @@ namespace demoChatBot.Dialogs
 {
     public class OrderRestaurantDialog : ComponentDialog
     {
-        public OrderRestaurantDialog() : base(nameof(OrderRestaurantDialog))
+        private readonly ConnectionSettings _connectionSetting;
+        public OrderRestaurantDialog(ConnectionSettings connectionSetting) : base(nameof(OrderRestaurantDialog))
         {
+
             AddDialog(new TextPrompt(nameof(TextPrompt)));
             AddDialog(new ChoicePrompt(nameof(ChoicePrompt)));
 
@@ -35,6 +37,7 @@ namespace demoChatBot.Dialogs
             AddDialog(new WaterfallDialog(nameof(WaterfallDialog), waterfallSteps));
 
             InitialDialogId = nameof(WaterfallDialog);
+            _connectionSetting = connectionSetting;
         }
 
         private async Task<DialogTurnResult> GetOrderRestaurant(WaterfallStepContext stepContext, CancellationToken cancellationToken)
@@ -42,7 +45,7 @@ namespace demoChatBot.Dialogs
             var data = (PaymentInfo)stepContext.Options;
             var attachments = new List<Attachment>();
             var reply = MessageFactory.Attachment(attachments);
-            var resOrderApi = $"https://devster-delivery.onmana.app/apprestaurant/index.html#/order-main";
+            var resOrderApi = $"{_connectionSetting.LineRestaurantOrderMain}";
             var heroCard = new HeroCard
             {
                 Title = "ดูข้อมูลออเดอร์หรืออัพเดทสถานะออเดอร์",

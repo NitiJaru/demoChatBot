@@ -21,10 +21,10 @@ namespace demoChatBot.Dialogs
         private readonly IBotStateService _botStateService;
         private readonly IRestClientService _restClientService;
         private RestaurantShortResponse _restaurantDetail;
-        private readonly ConnectionSetting _connectionSetting;
+        private readonly ConnectionSettings _connectionSetting;
 
 
-        public OpenRestaurantDialog(IBotStateService botStateService, IRestClientService restClientService, ConnectionSetting connectionSetting) : base(nameof(OpenRestaurantDialog))
+        public OpenRestaurantDialog(IBotStateService botStateService, IRestClientService restClientService, ConnectionSettings connectionSetting) : base(nameof(OpenRestaurantDialog))
         {
 
             AddDialog(new TextPrompt(nameof(TextPrompt)));

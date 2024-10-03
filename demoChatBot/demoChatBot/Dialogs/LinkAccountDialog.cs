@@ -15,9 +15,9 @@ namespace demoChatBot.Dialogs
     {
         private readonly IRestClientService _restClientService;
         private readonly IBotStateService _botStateService;
-        private readonly ConnectionSetting _connectionSetting;
+        private readonly ConnectionSettings _connectionSetting;
 
-        public LinkAccountDialog(IBotStateService botStateService, IRestClientService restClientService, ConnectionSetting connectionSetting)
+        public LinkAccountDialog(IBotStateService botStateService, IRestClientService restClientService, ConnectionSettings connectionSetting)
             : base(nameof(LinkAccountDialog))
         {
             AddDialog(new TextPrompt(nameof(TextPrompt)));
