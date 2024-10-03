@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using demoChatBot;
 using demoChatBot.Models;
 using demoChatBot.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -24,18 +25,20 @@ namespace Microsoft.BotBuilderSamples.Controllers
         private readonly IRestClientService _restClientService;
         private readonly IBotFrameworkHttpAdapter _adapter;
         private readonly string _appId;
+        private readonly ConnectionSetting _connectionSetting;
 
         private readonly IConversationReferenceRepository _referenceRepository;
 
         //private readonly ConcurrentDictionary<string, ConversationReference> _conversationReferences;
 
-        public NotifyController(IBotStateService botStateService, IBotFrameworkHttpAdapter adapter, IConfiguration configuration, IRestClientService restClientService, IConversationReferenceRepository referenceRepository)
+        public NotifyController(IBotStateService botStateService, IBotFrameworkHttpAdapter adapter, IConfiguration configuration, IRestClientService restClientService, IConversationReferenceRepository referenceRepository, ConnectionSetting connectionSetting)
         {
             _botStateService = botStateService;
             _adapter = adapter;
             _restClientService = restClientService;
             _referenceRepository = referenceRepository;
             _appId = configuration["MicrosoftAppId"] ?? string.Empty;
+            _connectionSetting = connectionSetting;
         }
 
 
@@ -50,9 +53,9 @@ namespace Microsoft.BotBuilderSamples.Controllers
             {
                 var userDetails = await _botStateService.UserDetailsAccessor.GetAsync(turnContext, () => new RestaurantDetails(), cancellationToken);
                 IMessageActivity messageActivity;
-             //   IMessageActivity messageActivity2;
-             //   messageActivity2 = getHeroCard($"botUserId:{botUserId}{Environment.NewLine}userDetails.RestaurantId: {userDetails.RestaurantId}",
-             //"", "", null, null);
+                //   IMessageActivity messageActivity2;
+                //   messageActivity2 = getHeroCard($"botUserId:{botUserId}{Environment.NewLine}userDetails.RestaurantId: {userDetails.RestaurantId}",
+                //"", "", null, null);
                 //await turnContext.SendActivityAsync(messageActivity2, cancellationToken);
                 var resOrderApi = $"https://liff.line.me/2006157455-3dNXrwAO#order-main";
                 var button = new List<CardAction> { new CardAction(ActionTypes.OpenUrl, "เปิด", value: resOrderApi) };
@@ -72,9 +75,9 @@ namespace Microsoft.BotBuilderSamples.Controllers
             {
                 var userDetails = await _botStateService.UserDetailsAccessor.GetAsync(turnContext, () => new RestaurantDetails(), cancellationToken);
                 IMessageActivity messageActivity;
-             //   IMessageActivity messageActivity2;
-             //   messageActivity2 = getHeroCard($"botUserId:{botUserId}{Environment.NewLine}userDetails.RestaurantId: {userDetails.RestaurantId}",
-             //"", "", null, null);
+                //   IMessageActivity messageActivity2;
+                //   messageActivity2 = getHeroCard($"botUserId:{botUserId}{Environment.NewLine}userDetails.RestaurantId: {userDetails.RestaurantId}",
+                //"", "", null, null);
                 //await turnContext.SendActivityAsync(messageActivity2, cancellationToken);
                 var resOrderApi = $"https://liff.line.me/2006157455-3dNXrwAO#menuupdate-main";
                 var image = new CardImage("");
@@ -131,9 +134,9 @@ namespace Microsoft.BotBuilderSamples.Controllers
             async Task BotCallback(ITurnContext turnContext, CancellationToken cancellationToken)
             {
                 var userDetails = await _botStateService.UserDetailsAccessor.GetAsync(turnContext, () => new RestaurantDetails(), cancellationToken);
-             //   IMessageActivity messageActivity2;
-             //   messageActivity2 = getHeroCard($"botUserId:{botUserId}{Environment.NewLine}userDetails.RestaurantId: {userDetails.RestaurantId}",
-             //"", "", null, null);
+                //   IMessageActivity messageActivity2;
+                //   messageActivity2 = getHeroCard($"botUserId:{botUserId}{Environment.NewLine}userDetails.RestaurantId: {userDetails.RestaurantId}",
+                //"", "", null, null);
                 //await turnContext.SendActivityAsync(messageActivity2, cancellationToken);
                 userDetails.StatusRestaurant = true;
                 await _botStateService.SaveChangesAsync(turnContext);
@@ -152,9 +155,9 @@ namespace Microsoft.BotBuilderSamples.Controllers
             async Task BotCallback(ITurnContext turnContext, CancellationToken cancellationToken)
             {
                 var userDetails = await _botStateService.UserDetailsAccessor.GetAsync(turnContext, () => new RestaurantDetails(), cancellationToken);
-             //   IMessageActivity messageActivity2;
-             //   messageActivity2 = getHeroCard($"botUserId:{botUserId}{Environment.NewLine}userDetails.RestaurantId: {userDetails.RestaurantId}",
-             //"", "", null, null);
+                //   IMessageActivity messageActivity2;
+                //   messageActivity2 = getHeroCard($"botUserId:{botUserId}{Environment.NewLine}userDetails.RestaurantId: {userDetails.RestaurantId}",
+                //"", "", null, null);
                 //await turnContext.SendActivityAsync(messageActivity2, cancellationToken);
                 var activity = Activity.CreateMessageActivity();
                 activity.Text = "สถานะร้านถูกปิดจากแอดมิน";
@@ -183,7 +186,7 @@ namespace Microsoft.BotBuilderSamples.Controllers
                 if (turnContext.Activity.From.Id != botUserId) return;
                 if (isApprove)
                 {
-                    var resturnonAPI = $"{APIBaseUrl}/api/Restaurant/GetRestaurantInfo/{resId}";
+                    var resturnonAPI = $"{_connectionSetting.DeliveryAPIBaseUrl}/api/Restaurant/GetRestaurantInfo/{resId}";
                     var respon = await _restClientService.Get<RestaurantShortResponse>(resturnonAPI, botUserId);
                     restaurantDetails.RestaurantName = respon.Name;
                     restaurantDetails.IsLinkedAccount = true;

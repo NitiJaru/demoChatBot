@@ -24,9 +24,10 @@ namespace demoChatBot.Dialogs
 
         private readonly IRestClientService _restClientService;
         private readonly IBotStateService _botStateService;
+        private readonly ConnectionSetting _connectionSetting;
 
         public MainDialog(LinkAccountDialog linkAccountDialog, FoodDialog foodDialog, PaymentDialog paymentDialog, OpenRestaurantDialog openRestaurantDialog, CloseRestaurantDialog closeRestaurantDialog, OrderRestaurantDialog orderRestaurantDialog,
-            IBotStateService botStateService, IRestClientService restClientService) : base(nameof(MainDialog))
+            IBotStateService botStateService, IRestClientService restClientService, ConnectionSetting connectionSetting) : base(nameof(MainDialog))
         {
             AddDialog(new TextPrompt(nameof(TextPrompt)));
             AddDialog(foodDialog);
@@ -50,12 +51,15 @@ namespace demoChatBot.Dialogs
             InitialDialogId = nameof(WaterfallDialog);
             _botStateService = botStateService;
             _restClientService = restClientService;
+            _connectionSetting = connectionSetting;
         }
 
         private async Task<DialogTurnResult> IntroStepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
             var userId = stepContext.Context.Activity.From.Id;
             var restaurantDetails = await _botStateService.UserDetailsAccessor.GetAsync(stepContext.Context, () => new RestaurantDetails(), cancellationToken);
+            await stepContext.Context.SendActivityAsync(MessageFactory.Text($"APIDelivery: {_connectionSetting.DeliveryAPIBaseUrl}"));
+
             if (restaurantDetails.IsLinkedAccount)
             {
                 return await stepContext.NextAsync(null, cancellationToken);
