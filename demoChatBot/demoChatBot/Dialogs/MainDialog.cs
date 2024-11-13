@@ -82,11 +82,13 @@ namespace demoChatBot.Dialogs
 
         private async Task<DialogTurnResult> ActStepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
+
             var userId = stepContext.Context.Activity.From.Id;
             var restaurantDetails = await _botStateService.UserDetailsAccessor.GetAsync(stepContext.Context, () => new RestaurantDetails(), cancellationToken);
             var attachments = new List<Attachment>();
             var reply = MessageFactory.Attachment(attachments);
             var data = stepContext.Context.Activity.Text;
+            await stepContext.Context.SendActivityAsync(MessageFactory.Text($"restaurantDetails:{restaurantDetails}{Environment.NewLine}  restaurantDetails.StatusRestaurant:{restaurantDetails.StatusRestaurant}"));
             if (data?.ToLower() == "reset")
             {
                 restaurantDetails.IsLinkedAccount = false;
