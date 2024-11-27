@@ -67,11 +67,18 @@ namespace Microsoft.BotBuilderSamples.Controllers
             }
         }
 
-        [HttpGet("{botUserId}")]
-        public async Task<IActionResult> UpdateMenu(string botUserId)
+        [HttpPost]
+        public async Task<IActionResult> UpdateMenu(OrderingRequest request)
         {
-            var conversationReference = await _referenceRepository.GetConversationReferenceAsync(botUserId);
-            await ((BotAdapter)_adapter).ContinueConversationAsync(_appId, conversationReference, BotCallback, default(CancellationToken));
+
+            var invalid = request is null || request.ChatBotIds is null || request.ChatBotIds.Count is 0;
+            if (invalid) return Ok();
+
+            var conversationReferences = await _referenceRepository.ListConversationReferenceAsync(request.ChatBotIds);
+            foreach (var conversationReference in conversationReferences)
+            {
+                await ((BotAdapter)_adapter).ContinueConversationAsync(_appId, conversationReference, BotCallback, default(CancellationToken));
+            }
             return Ok();
 
             async Task BotCallback(ITurnContext turnContext, CancellationToken cancellationToken)
@@ -91,11 +98,17 @@ namespace Microsoft.BotBuilderSamples.Controllers
 
         }
 
-        [HttpGet("{botUserId}")]
-        public async Task<IActionResult> CancleOrderByAdmin(string botUserId)
+        [HttpPost]
+        public async Task<IActionResult> CancleOrderByAdmin(OrderingRequest request)
         {
-            var conversationReference = await _referenceRepository.GetConversationReferenceAsync(botUserId);
-            await ((BotAdapter)_adapter).ContinueConversationAsync(_appId, conversationReference, BotCallback, default(CancellationToken));
+            var invalid = request is null || request.ChatBotIds is null || request.ChatBotIds.Count is 0;
+            if (invalid) return Ok();
+
+            var conversationReferences = await _referenceRepository.ListConversationReferenceAsync(request.ChatBotIds);
+            foreach (var conversationReference in conversationReferences)
+            {
+                await ((BotAdapter)_adapter).ContinueConversationAsync(_appId, conversationReference, BotCallback, default(CancellationToken));
+            }
             return Ok();
 
             async Task BotCallback(ITurnContext turnContext, CancellationToken cancellationToken)
@@ -110,11 +123,17 @@ namespace Microsoft.BotBuilderSamples.Controllers
         }
 
 
-        [HttpGet("{botUserId}")]
-        public async Task<IActionResult> OpenRestaurant(string botUserId)
+        [HttpPost]
+        public async Task<IActionResult> OpenRestaurant(OrderingRequest request)
         {
-            var conversationReference = await _referenceRepository.GetConversationReferenceAsync(botUserId);
-            await ((BotAdapter)_adapter).ContinueConversationAsync(_appId, conversationReference, BotCallback, default(CancellationToken));
+            var invalid = request is null || request.ChatBotIds is null || request.ChatBotIds.Count is 0;
+            if (invalid) return Ok();
+
+            var conversationReferences = await _referenceRepository.ListConversationReferenceAsync(request.ChatBotIds);
+            foreach (var conversationReference in conversationReferences)
+            {
+                await ((BotAdapter)_adapter).ContinueConversationAsync(_appId, conversationReference, BotCallback, default(CancellationToken));
+            }
             return Ok();
 
             async Task BotCallback(ITurnContext turnContext, CancellationToken cancellationToken)
@@ -124,11 +143,17 @@ namespace Microsoft.BotBuilderSamples.Controllers
                 await _botStateService.SaveChangesAsync(turnContext);
             }
         }
-        [HttpGet("{botUserId}")]
-        public async Task<IActionResult> CloseRestaurant(string botUserId)
+        [HttpPost]
+        public async Task<IActionResult> CloseRestaurant(OrderingRequest request)
         {
-            var conversationReference = await _referenceRepository.GetConversationReferenceAsync(botUserId);
-            await ((BotAdapter)_adapter).ContinueConversationAsync(_appId, conversationReference, BotCallback, default(CancellationToken));
+            var invalid = request is null || request.ChatBotIds is null || request.ChatBotIds.Count is 0;
+            if (invalid) return Ok();
+
+            var conversationReferences = await _referenceRepository.ListConversationReferenceAsync(request.ChatBotIds);
+            foreach (var conversationReference in conversationReferences)
+            {
+                await ((BotAdapter)_adapter).ContinueConversationAsync(_appId, conversationReference, BotCallback, default(CancellationToken));
+            }
             return Ok();
 
             async Task BotCallback(ITurnContext turnContext, CancellationToken cancellationToken)
@@ -140,11 +165,17 @@ namespace Microsoft.BotBuilderSamples.Controllers
         }
 
 
-        [HttpGet("{botUserId}")]
-        public async Task<IActionResult> OpenRestaurantByAdmin(string botUserId)
+        [HttpPost]
+        public async Task<IActionResult> OpenRestaurantByAdmin(OrderingRequest request)
         {
-            var conversationReference = await _referenceRepository.GetConversationReferenceAsync(botUserId);
-            await ((BotAdapter)_adapter).ContinueConversationAsync(_appId, conversationReference, BotCallback, default(CancellationToken));
+            var invalid = request is null || request.ChatBotIds is null || request.ChatBotIds.Count is 0;
+            if (invalid) return Ok();
+
+            var conversationReferences = await _referenceRepository.ListConversationReferenceAsync(request.ChatBotIds);
+            foreach (var conversationReference in conversationReferences)
+            {
+                await ((BotAdapter)_adapter).ContinueConversationAsync(_appId, conversationReference, BotCallback, default(CancellationToken));
+            }
             return Ok();
 
             async Task BotCallback(ITurnContext turnContext, CancellationToken cancellationToken)
@@ -157,11 +188,17 @@ namespace Microsoft.BotBuilderSamples.Controllers
             }
         }
 
-        [HttpGet("{botUserId}")]
-        public async Task<IActionResult> CloseRestaurantByAdmin(string botUserId)
+        [HttpPost]
+        public async Task<IActionResult> CloseRestaurantByAdmin(OrderingRequest request)
         {
-            var conversationReference = await _referenceRepository.GetConversationReferenceAsync(botUserId);
-            await ((BotAdapter)_adapter).ContinueConversationAsync(_appId, conversationReference, BotCallback, default(CancellationToken));
+            var invalid = request is null || request.ChatBotIds is null || request.ChatBotIds.Count is 0;
+            if (invalid) return Ok();
+
+            var conversationReferences = await _referenceRepository.ListConversationReferenceAsync(request.ChatBotIds);
+            foreach (var conversationReference in conversationReferences)
+            {
+                await ((BotAdapter)_adapter).ContinueConversationAsync(_appId, conversationReference, BotCallback, default(CancellationToken));
+            }
             return Ok();
 
             async Task BotCallback(ITurnContext turnContext, CancellationToken cancellationToken)
