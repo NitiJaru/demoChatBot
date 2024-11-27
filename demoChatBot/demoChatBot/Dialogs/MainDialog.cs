@@ -2,7 +2,6 @@
 using demoChatBot.Services;
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Dialogs;
-using Microsoft.Bot.Builder.Dialogs.Choices;
 using Microsoft.Bot.Schema;
 using System;
 using System.Collections.Generic;
@@ -81,7 +80,6 @@ namespace demoChatBot.Dialogs
             var attachments = new List<Attachment>();
             var reply = MessageFactory.Attachment(attachments);
             var data = stepContext.Context.Activity.Text;
-            await stepContext.Context.SendActivityAsync(MessageFactory.Text($"restaurantDetails:{restaurantDetails}{Environment.NewLine}  restaurantDetails.StatusRestaurant:{restaurantDetails.StatusRestaurant}"));
             if (data?.ToLower() == "reset")
             {
                 restaurantDetails.IsLinkedAccount = false;
@@ -115,16 +113,9 @@ namespace demoChatBot.Dialogs
                             }
                             else
                             {
-                                var messageText = $"สถานะร้าน ปิด";
-                                var promptMessage = MessageFactory.Text(messageText, messageText, InputHints.ExpectingInput);
-                                return await stepContext.PromptAsync(nameof(ChoicePrompt), new PromptOptions
-                                {
-                                    Prompt = promptMessage,
-                                    Choices = new[]
-                                    {
-                                    new Choice { Value = "เปิดร้าน" }
-                                }
-                                }, cancellationToken);
+
+                                await stepContext.Context.SendActivityAsync(MessageFactory.Text($"สถานะร้าน ปิด"));
+                                return await stepContext.EndDialogAsync(null, cancellationToken);
                             }
                     }
                 }

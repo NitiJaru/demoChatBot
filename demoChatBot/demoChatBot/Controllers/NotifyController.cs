@@ -119,23 +119,6 @@ namespace Microsoft.BotBuilderSamples.Controllers
                 var userDetails = await _botStateService.UserDetailsAccessor.GetAsync(turnContext, () => new RestaurantDetails(), cancellationToken);
                 userDetails.StatusRestaurant = true;
                 await _botStateService.SaveChangesAsync(turnContext);
-
-                //await turnContext.SendActivityAsync($"สถานะร้าน OpenRestaurant: {userDetails.StatusRestaurant}");
-                //var promptMessage = MessageFactory.Text("เปิดร้าน", InputHints.AcceptingInput);
-                //await turnContext.SendActivityAsync(promptMessage, cancellationToken);
-
-                //var card = new HeroCard
-                //{
-                //    Title = $"CheckStatus userDetails.StatusRestaurant",
-                //    Text = $"userDetails.StatusRestaurant = {userDetails.StatusRestaurant}",
-                //    Buttons = new List<CardAction> {
-                //        new(ActionTypes.ImBack, title: "status", value: "status")
-                //    }
-                //};
-                //var attachment = card.ToAttachment();
-                //var reply = MessageFactory.Attachment(attachment);
-                //await turnContext.SendActivityAsync(reply, cancellationToken);
-                //await _botStateService.SaveChangesAsync(turnContext);
             }
         }
         [HttpGet("{botUserId}")]
@@ -149,13 +132,7 @@ namespace Microsoft.BotBuilderSamples.Controllers
             {
                 var userDetails = await _botStateService.UserDetailsAccessor.GetAsync(turnContext, () => new RestaurantDetails(), cancellationToken);
                 userDetails.StatusRestaurant = false;
-                var activity = Activity.CreateMessageActivity();
-                activity.Text = "สถานะร้าน ปิด";
-                var choices = new List<string> { "เปิดร้าน" };
-                var reply = MessageFactory.SuggestedActions(choices, activity.Text, null, InputHints.ExpectingInput);
-                await turnContext.SendActivityAsync(reply);
                 await _botStateService.SaveChangesAsync(turnContext);
-
             }
         }
 
@@ -188,11 +165,7 @@ namespace Microsoft.BotBuilderSamples.Controllers
             {
                 var userDetails = await _botStateService.UserDetailsAccessor.GetAsync(turnContext, () => new RestaurantDetails(), cancellationToken);
                 userDetails.StatusRestaurant = false;
-                var activity = Activity.CreateMessageActivity();
-                activity.Text = "สถานะร้านถูกปิดจากแอดมิน";
-                var choices = new List<string> { "เปิดร้าน" };
-                var reply = MessageFactory.SuggestedActions(choices, activity.Text, null, InputHints.ExpectingInput);
-                await turnContext.SendActivityAsync(reply);
+                await turnContext.SendActivityAsync("สถานะร้านถูกปิดจากแอดมิน");
                 await _botStateService.SaveChangesAsync(turnContext);
             }
         }
