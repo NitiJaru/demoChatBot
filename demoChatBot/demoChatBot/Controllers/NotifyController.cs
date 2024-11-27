@@ -42,6 +42,9 @@ namespace Microsoft.BotBuilderSamples.Controllers
         [HttpPost]
         public async Task<IActionResult> Ordering(OrderingRequest request)
         {
+            var invalid = request is null || request.ChatBotIds is null || request.ChatBotIds.Count is 0;
+            if (invalid) return Ok();
+
             var conversationReferences = await _referenceRepository.ListConversationReferenceAsync(request.ChatBotIds);
             foreach (var conversationReference in conversationReferences)
             {
