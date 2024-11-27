@@ -1,22 +1,17 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
 using demoChatBot;
 using demoChatBot.Models;
 using demoChatBot.Services;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Bot.Builder;
-using Microsoft.Bot.Builder.Dialogs.Choices;
-using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Builder.Integration.AspNet.Core;
 using Microsoft.Bot.Schema;
 using Microsoft.Extensions.Configuration;
-using Amazon.Runtime.Internal;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Microsoft.BotBuilderSamples.Controllers
 {
@@ -44,12 +39,14 @@ namespace Microsoft.BotBuilderSamples.Controllers
             _connectionSetting = connectionSetting;
         }
 
-
-        [HttpGet("{botUserId}")]
-        public async Task<IActionResult> Ordering(string botUserId)
+        [HttpPost]
+        public async Task<IActionResult> Ordering(OrderingRequest request)
         {
-            var conversationReference = await _referenceRepository.GetConversationReferenceAsync(botUserId);
-            await ((BotAdapter)_adapter).ContinueConversationAsync(_appId, conversationReference, BotCallback, default(CancellationToken));
+            var conversationReferences = await _referenceRepository.ListConversationReferenceAsync(request.ChatBotIds);
+            foreach (var conversationReference in conversationReferences)
+            {
+                await ((BotAdapter)_adapter).ContinueConversationAsync(_appId, conversationReference, BotCallback, default(CancellationToken));
+            }
             return Ok();
 
             async Task BotCallback(ITurnContext turnContext, CancellationToken cancellationToken)

@@ -1,20 +1,13 @@
-﻿using Microsoft.Bot.Builder;
-using Microsoft.Bot.Builder.Dialogs;
-using Microsoft.Bot.Schema;
-using System.Threading.Tasks;
-using System.Threading;
-using System.Collections.Generic;
-using Microsoft.Bot.Builder.Dialogs.Choices;
-using System;
-using System.Linq;
-using demoChatBot.Models;
-using Newtonsoft.Json.Linq;
+﻿using demoChatBot.Models;
 using demoChatBot.Services;
-using Microsoft.AspNetCore.DataProtection.XmlEncryption;
-using Flurl.Http;
-using System.Net.Http;
-using MongoDB.Driver.Core.Configuration;
-using demoChatBot;
+using Microsoft.Bot.Builder;
+using Microsoft.Bot.Builder.Dialogs;
+using Microsoft.Bot.Builder.Dialogs.Choices;
+using Microsoft.Bot.Schema;
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace demoChatBot.Dialogs
 {
