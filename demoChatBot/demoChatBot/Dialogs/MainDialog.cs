@@ -44,6 +44,14 @@ namespace demoChatBot.Dialogs
             _connectionSettings = connectionSetting;
         }
 
+        protected override Task<DialogTurnResult> OnContinueDialogAsync(DialogContext innerDc, CancellationToken cancellationToken = default)
+        {
+            var userId = innerDc.Context.Activity.From.Id;
+            var userName = innerDc.Context.Activity.From.Name;
+            var updateChatbotInfoApi = $"{_connectionSettings.DeliveryAPIBaseUrl}/api/chatbot/update/{userName}";
+            _restClientService.Put(updateChatbotInfoApi, userId);
+            return base.OnContinueDialogAsync(innerDc, cancellationToken);
+        }
         private async Task<DialogTurnResult> IntroStepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
             var userId = stepContext.Context.Activity.From.Id;

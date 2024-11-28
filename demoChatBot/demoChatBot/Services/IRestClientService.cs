@@ -9,10 +9,10 @@ namespace demoChatBot.Services
     public interface IRestClientService
     {
 
-        Task<T> Get<T>(string endpointUrl, string? header = null);
-        Task<T> Post<T>(string endpointUrl, string requestBody, string? header = null);
-        Task Put(string endpointUrl, string requestBody);
-        Task Post(string endpointUrl, string requestBody, string? header = null);
+        Task<T> Get<T>(string endpointUrl, string header = null);
+        Task<T> Post<T>(string endpointUrl, string requestBody, string header = null);
+        Task Put(string endpointUrl, string userId, string requestBody = null);
+        Task Post(string endpointUrl, string requestBody, string header = null);
         Task<T> Put<T>(string endpointUrl, string requestBody);
     }
     public class RestClientService : IRestClientService
@@ -62,9 +62,16 @@ namespace demoChatBot.Services
             return default(T);
         }
 
-        public async Task Put(string endpointUrl, string requestBody)
+        public async Task Put(string endpointUrl, string userId, string requestBody = null)
         {
-            await endpointUrl.PutAsync(new StringContent(requestBody, Encoding.UTF8, "application/json"));
+            try
+            {
+                var headers = new { Line_id = userId };
+                await endpointUrl
+                        .WithHeaders(headers)
+                        .PutAsync(new StringContent(requestBody, Encoding.UTF8, "application/json"));
+            }
+            catch { }
         }
 
         public async Task Post(string endpointUrl, string requestBody, string? header = null)
